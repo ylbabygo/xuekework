@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认证状态测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>前端认证状态测试</h1>
+    
+    <div class="section">
+        <h3>1. 本地存储检查</h3>
+        <button onclick="checkLocalStorage()">检查本地存储</button>
+        <div id="localStorage-result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>2. 登录测试</h3>
+        <button onclick="testLogin()">测试登录</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>3. 模型API测试</h3>
+        <button onclick="testModelsAPI()">测试模型API</button>
+        <div id="models-result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>4. 清除认证信息</h3>
+        <button onclick="clearAuth()">清除认证信息</button>
+        <div id="clear-result"></div>
+    </div>
+
+    <script>
+        function checkLocalStorage() {
+            const token = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('user');
+            
+            const result = {
+                hasToken: !!token,
+                tokenLength: token ? token.length : 0,
+                hasUser: !!user,
+                user: user ? JSON.parse(user) : null
+            };
+            
+            document.getElementById('localStorage-result').innerHTML = `
+                <div class="${result.hasToken ? 'success' : 'error'}">
+                    <h4>本地存储状态:</h4>
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    // 保存认证信息
+                    localStorage.setItem('auth_token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+                    
+                    document.getElementById('login-result').innerHTML = `
+                        <div class="success">
+                            <h4>登录成功!</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('login-result').innerHTML = `
+                        <div class="error">
+                            <h4>登录失败:</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('login-result').innerHTML = `
+                    <div class="error">
+                        <h4>登录错误:</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testModelsAPI() {
+            try {
+                const token = localStorage.getItem('auth_token');
+                
+                const response = await fetch('/api/v1/ai/models', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('models-result').innerHTML = `
+                    <div class="${data.success ? 'success' : 'error'}">
+                        <h4>模型API响应 (状态: ${response.status}):</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        ${!token ? '<p><strong>注意: 没有认证token!</strong></p>' : ''}
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('models-result').innerHTML = `
+                    <div class="error">
+                        <h4>模型API错误:</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        function clearAuth() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            
+            document.getElementById('clear-result').innerHTML = `
+                <div class="info">
+                    <h4>认证信息已清除</h4>
+                </div>
+            `;
+        }
+        
+        // 页面加载时自动检查
+        window.onload = function() {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>

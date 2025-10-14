@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试模型加载</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>AI模型加载测试</h1>
+    
+    <button onclick="testModelsAPI()">测试模型API</button>
+    <button onclick="testWithAuth()">测试带认证的模型API</button>
+    <button onclick="checkLocalStorage()">检查本地存储</button>
+    
+    <div id="results"></div>
+
+    <script>
+        function addResult(message, isSuccess = true) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            results.appendChild(div);
+        }
+
+        function checkLocalStorage() {
+            const token = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('user');
+            
+            addResult(`认证Token: ${token ? '存在' : '不存在'}`);
+            addResult(`用户信息: ${user ? '存在' : '不存在'}`);
+            
+            if (token) {
+                addResult(`Token内容: ${token.substring(0, 20)}...`);
+            }
+        }
+
+        async function testModelsAPI() {
+            try {
+                addResult('开始测试模型API...');
+                
+                const response = await fetch('/api/v1/ai/models');
+                addResult(`API响应状态: ${response.status}`);
+                
+                const data = await response.json();
+                addResult(`API响应数据: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    const modelCount = Object.values(data.data).reduce((sum, models) => sum + (Array.isArray(models) ? models.length : 0), 0);
+                    addResult(`找到 ${modelCount} 个模型`);
+                } else {
+                    addResult('API返回失败', false);
+                }
+            } catch (error) {
+                addResult(`API调用失败: ${error.message}`, false);
+            }
+        }
+
+        async function testWithAuth() {
+            try {
+                const token = localStorage.getItem('auth_token');
+                if (!token) {
+                    addResult('没有找到认证token', false);
+                    return;
+                }
+                
+                addResult('开始测试带认证的模型API...');
+                
+                const response = await fetch('/api/v1/ai/models', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                addResult(`API响应状态: ${response.status}`);
+                
+                const data = await response.json();
+                addResult(`API响应数据: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    const modelCount = Object.values(data.data).reduce((sum, models) => sum + (Array.isArray(models) ? models.length : 0), 0);
+                    addResult(`找到 ${modelCount} 个模型`);
+                } else {
+                    addResult('API返回失败', false);
+                }
+            } catch (error) {
+                addResult(`API调用失败: ${error.message}`, false);
+            }
+        }
+
+        // 页面加载时自动检查
+        window.onload = function() {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>
