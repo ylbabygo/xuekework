@@ -109,6 +109,50 @@ router.get(`${API_VERSION}/db-check`, async (req, res) => {
   }
 });
 
+// 调试用户端点
+router.get(`${API_VERSION}/debug-user`, async (req, res) => {
+  try {
+    const databaseAdapter = require('../adapters/databaseAdapter');
+    
+    // 查找管理员用户
+    const user = await databaseAdapter.getUserByUsername('admin');
+    
+    if (!user) {
+      return res.json({
+        success: false,
+        message: '管理员用户不存在'
+      });
+    }
+
+    // 测试密码验证
+    const isValidPassword = await databaseAdapter.validateUserPassword(user, 'admin123');
+    
+    res.json({
+      success: true,
+      message: '用户调试信息',
+      data: {
+        user_exists: !!user,
+        user_id: user?.id,
+        username: user?.username,
+        email: user?.email,
+        role: user?.role,
+        status: user?.status,
+        has_password_hash: !!user?.password_hash,
+        password_hash_length: user?.password_hash?.length,
+        password_valid: isValidPassword,
+        created_at: user?.created_at
+      }
+    });
+  } catch (error) {
+    console.error('用户调试错误:', error);
+    res.status(500).json({
+      success: false,
+      message: '用户调试失败',
+      error: error.message
+    });
+  }
+});
+
 // 注册路由
 router.use(`${API_VERSION}/auth`, authRoutes);
 router.use(`${API_VERSION}/ai`, aiRoutes);
