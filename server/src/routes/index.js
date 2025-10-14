@@ -69,6 +69,12 @@ router.get(`${API_VERSION}/test`, async (req, res) => {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
       database_type: process.env.USE_SUPABASE === 'true' ? 'supabase' : 'sqlite',
+      env_debug: {
+        USE_SUPABASE: process.env.USE_SUPABASE,
+        SUPABASE_URL: process.env.SUPABASE_URL ? 'SET' : 'NOT_SET',
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT_SET',
+        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'NOT_SET'
+      },
       user_debug: userDebugInfo
     });
   } catch (error) {
