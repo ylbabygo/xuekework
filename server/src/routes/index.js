@@ -38,16 +38,24 @@ router.get(`${API_VERSION}/test`, async (req, res) => {
       const databaseAdapter = require('../adapters/databaseAdapter');
       const user = await databaseAdapter.getUserByUsername('admin');
       if (user) {
-        const isValidPassword = await databaseAdapter.validateUserPassword(user, 'admin123');
-        userDebugInfo = {
-          user_exists: true,
-          user_id: user.id,
-          username: user.username,
-          role: user.role,
-          status: user.status,
-          has_password_hash: !!user.password_hash,
-          password_valid: isValidPassword
-        };
+         const isValidPassword = await databaseAdapter.validateUserPassword(user, 'admin123');
+         
+         // 额外的密码调试信息
+         const bcrypt = require('bcryptjs');
+         const directBcryptTest = await bcrypt.compare('admin123', user.password_hash);
+         
+         userDebugInfo = {
+           user_exists: true,
+           user_id: user.id,
+           username: user.username,
+           role: user.role,
+           status: user.status,
+           has_password_hash: !!user.password_hash,
+           password_hash_preview: user.password_hash ? user.password_hash.substring(0, 20) + '...' : null,
+           password_valid: isValidPassword,
+           direct_bcrypt_test: directBcryptTest,
+           use_supabase: process.env.USE_SUPABASE === 'true'
+         };
       } else {
         userDebugInfo = { user_exists: false };
       }
