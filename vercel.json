@@ -18,7 +18,14 @@
   ],
   "build": {
     "env": {
-      "REACT_APP_API_URL": "/api/v1"
+      "REACT_APP_API_URL": "/api/v1",
+      "NODE_OPTIONS": "--max-old-space-size=4096",
+      "GENERATE_SOURCEMAP": "false"
+    }
+  },
+  "functions": {
+    "app/api/**/*.js": {
+      "maxDuration": 30
     }
   }
 }

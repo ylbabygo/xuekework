@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "学科运营AI工作台 - 专为学科运营团队设计的AI驱动协同工作平台",
   "main": "server/index.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "server:dev": "cd server && npm run dev",
