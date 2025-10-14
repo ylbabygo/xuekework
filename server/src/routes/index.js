@@ -40,6 +40,51 @@ router.get(`${API_VERSION}/test`, (req, res) => {
   });
 });
 
+// 数据库状态检查端点
+router.get(`${API_VERSION}/db-status`, async (req, res) => {
+  try {
+    const { testConnection } = require('../config/database');
+    const isConnected = await testConnection();
+    
+    res.json({
+      success: true,
+      message: '数据库状态检查完成',
+      database_type: process.env.DATABASE_TYPE || 'sqlite',
+      connected: isConnected,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: '数据库状态检查失败',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// 数据库初始化端点
+router.post(`${API_VERSION}/init-db`, async (req, res) => {
+  try {
+    const { initDatabase } = require('../config/database');
+    const result = await initDatabase();
+    
+    res.json({
+      success: true,
+      message: '数据库初始化完成',
+      result: result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: '数据库初始化失败',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // 注册路由
 router.use(`${API_VERSION}/auth`, authRoutes);
 router.use(`${API_VERSION}/ai`, aiRoutes);
