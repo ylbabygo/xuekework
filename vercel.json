@@ -22,10 +22,5 @@
       "NODE_OPTIONS": "--max-old-space-size=4096",
       "GENERATE_SOURCEMAP": "false"
     }
-  },
-  "functions": {
-    "app/api/**/*.js": {
-      "maxDuration": 30
-    }
   }
 }
