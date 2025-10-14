@@ -1,27 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, 
-  Video, 
-  FileText, 
-  Link, 
-  GraduationCap, 
-  BarChart3, 
+  Clock, 
+  ExternalLink, 
+  Play, 
+  CheckCircle, 
+  Calendar, 
   Target, 
-  Calendar,
-  Search,
-  Filter,
-  Plus,
-  ExternalLink,
-  Play,
-  CheckCircle,
-  Clock,
-  Star,
-  Tag,
+  Plus, 
   X,
-  TrendingUp,
-  Users,
-  Award,
-  Brain
+  BarChart3,
+  Filter,
+  FileText,
+  Video,
+  GraduationCap,
+  Link,
+  Search
 } from 'lucide-react';
 import './LearningResources.css';
 

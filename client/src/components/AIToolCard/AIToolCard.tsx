@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { 
-  StarIcon,
   HeartIcon,
   EyeIcon,
-  LinkIcon,
   SparklesIcon,
-  FireIcon,
   TrophyIcon,
   DevicePhoneMobileIcon,
   CpuChipIcon,
   CodeBracketIcon,
   GlobeAltIcon,
-  BookmarkIcon,
-  ShareIcon
+  BookmarkIcon
 } from '@heroicons/react/24/outline';
 import { 
   HeartIcon as HeartSolidIcon, 

@@ -40,7 +40,7 @@ const queryClient = new QueryClient({
 
 // 主应用路由组件
 function AppRoutes() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
