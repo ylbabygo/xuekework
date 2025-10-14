@@ -66,12 +66,12 @@ router.get(`${API_VERSION}/db-status`, async (req, res) => {
 // 数据库初始化端点
 router.post(`${API_VERSION}/init-db`, async (req, res) => {
   try {
-    const { initDatabase } = require('../config/database');
-    const result = await initDatabase();
+    const { initSupabaseDatabase } = require('../utils/init-supabase');
+    const result = await initSupabaseDatabase();
     
     res.json({
-      success: true,
-      message: '数据库初始化完成',
+      success: result.success,
+      message: result.message,
       result: result,
       timestamp: new Date().toISOString()
     });
@@ -79,6 +79,30 @@ router.post(`${API_VERSION}/init-db`, async (req, res) => {
     res.status(500).json({
       success: false,
       message: '数据库初始化失败',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// 简化的数据库状态检查端点
+router.get(`${API_VERSION}/db-check`, async (req, res) => {
+  try {
+    const { checkUsersTable } = require('../utils/init-supabase');
+    const result = await checkUsersTable();
+    
+    res.json({
+      success: true,
+      message: '数据库状态检查完成',
+      database_type: process.env.DATABASE_TYPE || 'sqlite',
+      users_table_exists: result.exists,
+      error: result.error || null,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: '数据库状态检查失败',
       error: error.message,
       timestamp: new Date().toISOString()
     });
