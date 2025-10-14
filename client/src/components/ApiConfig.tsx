@@ -26,13 +26,18 @@ const ApiConfig: React.FC<ApiConfigProps> = ({ onConfigChange }) => {
   const testApiConnection = async (apiUrl: string) => {
     setTestStatus('testing');
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const response = await fetch(`${apiUrl}/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        timeout: 5000,
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
       
       if (response.ok) {
         setTestStatus('success');
@@ -45,7 +50,11 @@ const ApiConfig: React.FC<ApiConfigProps> = ({ onConfigChange }) => {
       }
     } catch (error) {
       setTestStatus('error');
-      message.error('API连接测试失败，请检查网络连接和API地址');
+      if (error instanceof Error && error.name === 'AbortError') {
+        message.error('API连接超时，请检查网络或API地址');
+      } else {
+        message.error('API连接测试失败，请检查地址是否正确');
+      }
       return false;
     }
   };
