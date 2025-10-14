@@ -24,7 +24,6 @@
     "antd": "^5.27.4",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
-    "cross-env": "^10.1.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
@@ -36,9 +35,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "cross-env NODE_OPTIONS=\"--no-deprecation\" react-scripts start",
-    "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
-    "build:vercel": "cross-env GENERATE_SOURCEMAP=false CI=false react-scripts build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "build:vercel": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "analyze": "npm run build && npx serve -s build"
