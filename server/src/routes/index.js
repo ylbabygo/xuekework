@@ -60,7 +60,7 @@ router.get(`${API_VERSION}/test`, async (req, res) => {
       message: 'API正常工作',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
-      database_type: process.env.DATABASE_TYPE || 'sqlite',
+      database_type: process.env.USE_SUPABASE === 'true' ? 'supabase' : 'sqlite',
       user_debug: userDebugInfo
     });
   } catch (error) {
