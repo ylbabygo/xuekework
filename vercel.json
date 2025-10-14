@@ -1,10 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/build",
-  "installCommand": "npm install && cd client && npm install",
-  "build": {
-    "env": {
-      "GENERATE_SOURCEMAP": "false"
-    }
-  }
+  "installCommand": "cd client && npm install"
 }
