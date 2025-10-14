@@ -30,14 +30,47 @@ router.get('/health', (req, res) => {
 });
 
 // API测试端点
-router.get(`${API_VERSION}/test`, (req, res) => {
-  res.json({
-    success: true,
-    message: 'API正常工作',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    database_type: process.env.DATABASE_TYPE || 'sqlite'
-  });
+router.get(`${API_VERSION}/test`, async (req, res) => {
+  try {
+    // 添加用户查找测试
+    let userDebugInfo = null;
+    try {
+      const databaseAdapter = require('../adapters/databaseAdapter');
+      const user = await databaseAdapter.getUserByUsername('admin');
+      if (user) {
+        const isValidPassword = await databaseAdapter.validateUserPassword(user, 'admin123');
+        userDebugInfo = {
+          user_exists: true,
+          user_id: user.id,
+          username: user.username,
+          role: user.role,
+          status: user.status,
+          has_password_hash: !!user.password_hash,
+          password_valid: isValidPassword
+        };
+      } else {
+        userDebugInfo = { user_exists: false };
+      }
+    } catch (userError) {
+      userDebugInfo = { error: userError.message };
+    }
+
+    res.json({
+      success: true,
+      message: 'API正常工作',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      database_type: process.env.DATABASE_TYPE || 'sqlite',
+      user_debug: userDebugInfo
+    });
+  } catch (error) {
+    console.error('测试端点错误:', error);
+    res.status(500).json({
+      success: false,
+      message: '测试失败',
+      error: error.message
+    });
+  }
 });
 
 // 数据库状态检查端点
