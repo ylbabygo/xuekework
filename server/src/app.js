@@ -42,7 +42,8 @@ const corsOptions = {
       'http://localhost:3000',
       'http://localhost:3001',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001'
+      'http://127.0.0.1:3001',
+      'https://xuekework.vercel.app'
     ];
     
     // 开发环境允许所有来源（默认为开发环境）
@@ -72,8 +73,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 日志中间件
-if (process.env.NODE_ENV === 'production') {
-  // 生产环境：写入文件
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+  // 生产环境（非Vercel）：写入文件
   const logDir = path.join(__dirname, '../logs');
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
@@ -86,7 +87,7 @@ if (process.env.NODE_ENV === 'production') {
   
   app.use(morgan('combined', { stream: accessLogStream }));
 } else {
-  // 开发环境：控制台输出
+  // 开发环境或Vercel环境：控制台输出
   app.use(morgan('dev'));
 }
 

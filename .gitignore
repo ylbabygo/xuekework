@@ -80,3 +80,4 @@ test_*.txt
 # Package lock files (optional - you can keep these if you want exact dependency versions)
 # package-lock.json
 # yarn.lock
+.vercel

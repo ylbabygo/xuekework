@@ -32,8 +32,8 @@ const createApiInstance = (): AxiosInstance => {
       // 本地开发环境
       return 'http://localhost:5000/api/v1';
     } else if (hostname.includes('vercel.app') || hostname.includes('netlify.app')) {
-      // 生产环境 - 需要用户配置实际的后端API地址
-      return 'https://your-backend-api.vercel.app/api/v1';
+      // 生产环境 - 使用相对路径指向同域名下的API
+      return '/api/v1';
     } else {
       // 其他环境，使用相对路径
       return '/api/v1';

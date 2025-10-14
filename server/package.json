@@ -12,7 +12,7 @@
     "init-db": "node src/scripts/initDatabase.js"
   },
   "dependencies": {
-
+    "@supabase/supabase-js": "^2.75.0",
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",

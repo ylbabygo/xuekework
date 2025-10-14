@@ -29,6 +29,17 @@ router.get('/health', (req, res) => {
   });
 });
 
+// API测试端点
+router.get(`${API_VERSION}/test`, (req, res) => {
+  res.json({
+    success: true,
+    message: 'API正常工作',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    database_type: process.env.DATABASE_TYPE || 'sqlite'
+  });
+});
+
 // 注册路由
 router.use(`${API_VERSION}/auth`, authRoutes);
 router.use(`${API_VERSION}/ai`, aiRoutes);

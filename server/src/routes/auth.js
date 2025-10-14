@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const AuthController = require('../controllers/authController');
+const { USE_SUPABASE } = require('../config/database');
+
+// 根据配置选择认证控制器
+const AuthController = USE_SUPABASE 
+  ? require('../controllers/authControllerSupabase')
+  : require('../controllers/authController');
+
 const { 
   authenticate, 
   optionalAuth,

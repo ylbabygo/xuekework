@@ -3,16 +3,19 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 
-// 确保上传目录存在
+// 确保上传目录存在（仅在非Vercel环境中）
 const uploadDir = path.join(__dirname, '../../uploads');
 const assetsDir = path.join(uploadDir, 'assets');
 const thumbnailsDir = path.join(uploadDir, 'thumbnails');
 
-[uploadDir, assetsDir, thumbnailsDir].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
+// 在Vercel环境中跳过目录创建（文件系统只读）
+if (!process.env.VERCEL) {
+  [uploadDir, assetsDir, thumbnailsDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+}
 
 // 配置存储
 const storage = multer.diskStorage({

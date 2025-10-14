@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { User } = require('../models');
+const supabaseService = require('../services/supabaseService');
 
 // JWT密钥
 const JWT_SECRET = process.env.JWT_SECRET || 'xueke-ai-workspace-secret-key-2024';
@@ -50,7 +50,7 @@ async function authenticate(req, res, next) {
     }
 
     // 获取用户信息
-    const user = await User.findById(decoded.id);
+    const user = await supabaseService.getUserById(decoded.id);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -86,7 +86,7 @@ async function optionalAuth(req, res, next) {
       const decoded = verifyToken(token);
       
       if (decoded) {
-        const user = await User.findById(decoded.id);
+        const user = await supabaseService.getUserById(decoded.id);
         if (user && user.is_active) {
           req.user = user;
         }

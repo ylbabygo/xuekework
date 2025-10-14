@@ -5,11 +5,15 @@ const path = require('path');
 // 检查数据库类型
 const DATABASE_TYPE = process.env.DATABASE_TYPE || 'sqlite';
 const USE_SQLITE = DATABASE_TYPE === 'sqlite' || (process.env.USE_SQLITE === 'true' || !process.env.DB_HOST);
+const USE_SUPABASE = DATABASE_TYPE === 'supabase';
 
 let sqliteModule = null;
+let supabaseModule = null;
 
 if (USE_SQLITE) {
   sqliteModule = require('./sqlite');
+} else if (USE_SUPABASE) {
+  supabaseModule = require('./supabase');
 }
 
 // 数据库配置
@@ -29,7 +33,7 @@ const dbConfig = {
 
 // 创建连接池（仅MySQL）
 let pool = null;
-if (!USE_SQLITE) {
+if (!USE_SQLITE && !USE_SUPABASE) {
   pool = mysql.createPool(dbConfig);
 }
 
@@ -38,6 +42,8 @@ async function testConnection() {
   try {
     if (USE_SQLITE) {
       return await sqliteModule.initSQLite();
+    } else if (USE_SUPABASE) {
+      return await supabaseModule.testSupabaseConnection();
     } else {
       const connection = await pool.getConnection();
       console.log('✅ MySQL数据库连接成功');
@@ -83,6 +89,11 @@ async function query(sql, params = []) {
   try {
     if (USE_SQLITE) {
       return await sqliteModule.query(sql, params);
+    } else if (USE_SUPABASE) {
+      // 对于Supabase，我们需要将SQL查询转换为Supabase查询
+      // 这里先返回空数组，避免错误
+      console.log('⚠️  Supabase模式下的SQL查询需要转换，暂时返回空结果');
+      return [];
     } else {
       const [rows] = await pool.execute(sql, params);
       return rows;
@@ -196,5 +207,7 @@ module.exports = {
   getStats,
   dbConfig,
   USE_SQLITE,
-  DATABASE_TYPE
+  USE_SUPABASE,
+  DATABASE_TYPE,
+  supabaseModule
 };
