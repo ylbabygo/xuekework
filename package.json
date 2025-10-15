@@ -4,7 +4,7 @@
   "description": "学科运营AI工作台 - 专为学科运营团队设计的AI驱动协同工作平台",
   "main": "server/index.js",
   "engines": {
-    "node": ">=18.0.0",
+    "node": "22.x",
     "npm": ">=8.0.0"
   },
   "scripts": {
@@ -39,11 +39,11 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^6.10.0",
-    "express-validator": "^7.0.1",
+    "express-validator": "^7.2.1",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.2",
     "mysql2": "^3.6.0",
     "node-fetch": "^2.7.0",
     "redis": "^4.6.8",
