@@ -37,8 +37,22 @@ try {
       console.log(`📥 收到请求: ${req.method} ${req.url}`);
       console.log(`📋 请求头:`, JSON.stringify(req.headers, null, 2));
       
-      // 设置CORS头
-      res.setHeader('Access-Control-Allow-Origin', '*');
+      // 设置CORS头 - 修复安全冲突
+      const origin = req.headers.origin;
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+        'https://xueke-ai-frontend.vercel.app',
+        'https://xueke-ai.vercel.app'
+      ];
+      
+      // 检查是否是允许的域名或Vercel域名
+      if (allowedOrigins.includes(origin) || (origin && origin.includes('.vercel.app'))) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      }
+      
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
       res.setHeader('Access-Control-Allow-Credentials', 'true');
