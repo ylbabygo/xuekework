@@ -44,6 +44,10 @@ router.get(`${API_VERSION}/test`, async (req, res) => {
          const bcrypt = require('bcryptjs');
          const directBcryptTest = await bcrypt.compare('admin123', user.password_hash);
          
+         // 测试不同的密码哈希
+         const testHash = await bcrypt.hash('admin123', 10);
+         const testHashCompare = await bcrypt.compare('admin123', testHash);
+         
          userDebugInfo = {
            user_exists: true,
            user_id: user.id,
@@ -52,9 +56,12 @@ router.get(`${API_VERSION}/test`, async (req, res) => {
            status: user.status,
            has_password_hash: !!user.password_hash,
            password_hash_preview: user.password_hash ? user.password_hash.substring(0, 20) + '...' : null,
+           password_hash_length: user.password_hash ? user.password_hash.length : 0,
            password_valid: isValidPassword,
            direct_bcrypt_test: directBcryptTest,
-           use_supabase: process.env.USE_SUPABASE === 'true'
+           test_hash_compare: testHashCompare,
+           use_supabase: process.env.USE_SUPABASE === 'true',
+           bcrypt_version: require('bcryptjs/package.json').version
          };
       } else {
         userDebugInfo = { user_exists: false };
