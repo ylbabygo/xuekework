@@ -1,133 +1,126 @@
 # Vercel 部署指南
 
-## 项目概述
-学科运营AI工作台前端项目，基于React + TypeScript构建，适配Vercel平台部署。
+## 📋 部署前准备清单
 
-## 部署步骤
+### 1. 环境变量配置
+在Vercel控制台中设置以下环境变量：
 
-### 1. 准备工作
-- 确保项目已推送到GitHub
-- 注册/登录 [Vercel](https://vercel.com) 账号
-- 连接GitHub账号到Vercel
-
-### 2. 导入项目
-1. 在Vercel控制台点击 "New Project"
-2. 选择GitHub仓库：`xueke-ai-workspace`
-3. 选择 `client` 目录作为根目录
-4. 框架预设选择 "Create React App"
-
-### 3. 环境变量配置
-在Vercel项目设置中添加以下环境变量：
-
+#### 必需变量：
 ```
-REACT_APP_API_URL=https://your-backend-api.vercel.app/api/v1
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+JWT_SECRET=your_secure_jwt_secret_here_minimum_32_characters
+```
+
+#### 可选变量：
+```
+NODE_ENV=production
+JWT_EXPIRES_IN=7d
+USE_SUPABASE=true
+DATABASE_TYPE=supabase
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+REACT_APP_API_URL=/api/v1
 REACT_APP_NAME=学科运营AI工作台
 REACT_APP_VERSION=1.0.0
 GENERATE_SOURCEMAP=false
 ```
 
-### 4. 构建设置
-- **Framework Preset**: Create React App
-- **Root Directory**: client
-- **Build Command**: npm run build
-- **Output Directory**: build
-- **Install Command**: npm install
+### 2. 数据库准备
+- ✅ 确保Supabase项目已创建
+- ✅ 数据库表结构已初始化
+- ✅ 用户数据已迁移（如需要）
 
-### 5. 域名配置
-- Vercel会自动分配一个域名：`your-project.vercel.app`
-- 可以在项目设置中配置自定义域名
+### 3. 项目文件检查
+- ✅ `vercel.json` 配置文件已创建
+- ✅ 环境变量示例文件已更新
+- ✅ 构建脚本已优化
 
-## 后端API部署建议
+## 🚀 部署步骤
 
-### 选项1: Vercel Serverless Functions
-- 将后端代码改造为Serverless Functions
-- 适合轻量级API服务
+### 方法一：通过Vercel CLI
+```bash
+# 安装Vercel CLI
+npm i -g vercel
 
-### 选项2: Render
-- 免费的Node.js托管服务
-- 自动从GitHub部署
-- 部署命令：通过Git连接自动部署
+# 登录Vercel
+vercel login
 
-### 选项3: Heroku
-- 经典的Node.js部署平台
-- 需要添加 `Procfile` 文件
-
-### 选项4: Render
-- 免费的Node.js托管服务
-- 自动从GitHub部署
-
-## 配置文件说明
-
-### vercel.json
-```json
-{
-  "version": 2,
-  "name": "xueke-ai-workspace",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "headers": {
-        "cache-control": "s-maxage=31536000,immutable"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
-}
+# 部署项目
+vercel --prod
 ```
 
-### .env.production
+### 方法二：通过GitHub集成
+1. 将代码推送到GitHub仓库
+2. 在Vercel控制台连接GitHub仓库
+3. 配置环境变量
+4. 触发自动部署
+
+### 方法三：通过Vercel控制台
+1. 访问 [vercel.com](https://vercel.com)
+2. 点击 "New Project"
+3. 导入GitHub仓库或上传项目文件
+4. 配置环境变量
+5. 点击 "Deploy"
+
+## ⚙️ 部署配置说明
+
+### 项目结构
 ```
-REACT_APP_API_URL=https://your-backend-api.vercel.app/api/v1
-REACT_APP_NAME=学科运营AI工作台
-REACT_APP_VERSION=1.0.0
-GENERATE_SOURCEMAP=false
+xueke-ai/
+├── client/          # React前端应用
+├── server/          # Node.js后端API
+├── vercel.json      # Vercel配置文件
+└── .env.vercel      # 环境变量示例
 ```
 
-## 部署后验证
+### 路由配置
+- `/api/*` → 后端API服务
+- `/*` → 前端React应用
 
-1. **访问应用**: 打开Vercel分配的域名
-2. **检查API连接**: 确认前端能正常调用后端API
-3. **功能测试**: 测试登录、内容生成等核心功能
-4. **性能检查**: 使用Lighthouse检查性能指标
+### 构建配置
+- 前端：使用 `@vercel/static-build`
+- 后端：使用 `@vercel/node`
+- 输出目录：`client/build`
 
-## 常见问题
+## 🔧 常见问题解决
 
-### Q: 部署后页面空白
-A: 检查构建日志，确认所有依赖正确安装
+### 1. API路径问题
+确保前端API调用使用相对路径 `/api/v1`
 
-### Q: API请求失败
-A: 检查环境变量配置，确认后端API地址正确
+### 2. 环境变量未生效
+检查Vercel控制台中的环境变量设置
 
-### Q: 路由404错误
-A: 确认vercel.json中的路由配置正确
+### 3. 数据库连接失败
+验证Supabase配置信息是否正确
 
-### Q: 构建失败
-A: 检查package.json中的构建脚本和依赖版本
+### 4. 构建失败
+检查依赖版本兼容性和构建日志
 
-## 更新部署
+## 📊 性能优化建议
 
-1. 推送代码到GitHub主分支
-2. Vercel会自动触发重新部署
-3. 查看部署日志确认成功
+1. **启用压缩**：已在服务端配置gzip压缩
+2. **缓存策略**：静态资源自动缓存
+3. **代码分割**：React应用已启用代码分割
+4. **图片优化**：建议使用Vercel Image Optimization
 
-## 监控和分析
+## 🔒 安全配置
 
-- Vercel提供内置的性能监控
-- 可以查看访问统计和错误日志
-- 支持集成第三方监控服务
+1. **HTTPS**：Vercel自动提供SSL证书
+2. **CORS**：已配置跨域访问控制
+3. **速率限制**：已配置API速率限制
+4. **环境变量**：敏感信息通过环境变量管理
 
----
+## 📈 监控和日志
 
-**注意**: 请根据实际的后端API地址更新环境变量配置。
+- 使用Vercel Analytics监控性能
+- 通过Vercel Functions查看服务端日志
+- 配置错误报告和监控
+
+## 🔄 持续部署
+
+推荐设置GitHub Actions或Vercel Git集成实现：
+- 自动构建和部署
+- 环境分离（开发/生产）
+- 回滚机制

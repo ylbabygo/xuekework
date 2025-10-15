@@ -1,4 +1,4 @@
-const { query } = require('../config/sqlite');
+const { query } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 
 class UserAIToolBookmark {

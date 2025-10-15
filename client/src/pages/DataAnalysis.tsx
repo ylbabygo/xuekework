@@ -42,7 +42,7 @@ const ANALYSIS_FUNCTIONS = [
     description: '深度分析数据模式、趋势和洞察',
     icon: '🔍',
     color: 'primary',
-    endpoint: '/api/v1/data/analyze/text'
+    endpoint: '/data/analyze/text'
   },
   {
     id: 'report',
@@ -50,7 +50,7 @@ const ANALYSIS_FUNCTIONS = [
     description: '生成专业的数据分析报告',
     icon: '📋',
     color: 'success',
-    endpoint: '/api/v1/data/report/generate'
+    endpoint: '/data/report/generate'
   },
   {
     id: 'visualization',
@@ -58,7 +58,7 @@ const ANALYSIS_FUNCTIONS = [
     description: '推荐最佳的数据可视化方案',
     icon: '📊',
     color: 'warning',
-    endpoint: '/api/v1/data/visualization/suggestions'
+    endpoint: '/data/visualization/suggestions'
   },
   {
     id: 'markdown',
@@ -66,7 +66,7 @@ const ANALYSIS_FUNCTIONS = [
     description: '生成结构化的Markdown文档',
     icon: '📝',
     color: 'primary',
-    endpoint: '/api/v1/data/markdown/generate'
+    endpoint: '/data/markdown/generate'
   },
   {
     id: 'html',
@@ -74,7 +74,7 @@ const ANALYSIS_FUNCTIONS = [
     description: '创建交互式的HTML分析页面',
     icon: '🌐',
     color: 'success',
-    endpoint: '/api/v1/data/html/generate'
+    endpoint: '/data/html/generate'
   }
 ];
 
@@ -253,7 +253,7 @@ const DataAnalysis: React.FC = () => {
 
   // 分析执行
   const executeAnalysis = async (functionConfig: typeof ANALYSIS_FUNCTIONS[0]) => {
-    const { id, endpoint } = functionConfig;
+    let { id, endpoint } = functionConfig;
     
     setLoadingStates(prev => ({ ...prev, [id]: true }));
     setCurrentStep(3);
@@ -273,6 +273,7 @@ const DataAnalysis: React.FC = () => {
       if (id === 'analyze') {
         // 数据分析功能
         if (inputType === 'text') {
+          endpoint = '/data/analyze/text';
           requestBody = {
             text: textInput,
             analysisType,
@@ -281,6 +282,7 @@ const DataAnalysis: React.FC = () => {
           headers['Content-Type'] = 'application/json';
         } else if (uploadedFile) {
           // 文件上传分析
+          endpoint = '/data/analyze/upload';
           const formData = new FormData();
           formData.append('file', uploadedFile);
           formData.append('analysisType', analysisType);
@@ -288,6 +290,7 @@ const DataAnalysis: React.FC = () => {
           requestBody = formData;
           // 不设置Content-Type，让浏览器自动设置
         } else if (filePath) {
+          endpoint = '/data/analyze/file';
           requestBody = {
             filePath,
             analysisType,
@@ -416,6 +419,7 @@ const DataAnalysis: React.FC = () => {
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
               placeholder="请输入您要分析的数据或文本内容..."
+              style={{ color: 'var(--text-primary)' }}
               onFocus={() => setCurrentStep(Math.max(currentStep, 1))}
             />
           ) : (

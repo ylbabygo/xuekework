@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "name": "xueke-ai-platform",
   "builds": [
     {
       "src": "client/package.json",
@@ -9,54 +10,26 @@
       }
     },
     {
-      "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 30
-      }
+      "src": "server/src/server.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/health",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/client/build/static/$1"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/client/build/favicon.ico"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/client/build/manifest.json"
-    },
-    {
-      "src": "/logo(.*).png",
-      "dest": "/client/build/logo$1.png"
-    },
-    {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
-      "dest": "/client/build/$1"
+      "dest": "/server/src/server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/client/build/index.html"
+      "dest": "/client/build/$1"
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "GENERATE_SOURCEMAP": "false",
-    "ESLINT_NO_DEV_ERRORS": "true",
-    "TSC_COMPILE_ON_ERROR": "true",
-    "DISABLE_ESLINT_PLUGIN": "true"
+    "NODE_ENV": "production"
   },
-  "installCommand": "npm install && cd client && npm install && cd ../server && npm install",
-  "buildCommand": "cd client && npm run build"
+  "functions": {
+    "server/src/server.js": {
+      "maxDuration": 30
+    }
+  }
 }

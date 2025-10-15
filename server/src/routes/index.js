@@ -16,8 +16,8 @@ const settingsRoutes = require('./settings');
 const dashboardRoutes = require('./dashboard');
 const usersRoutes = require('./users');
 
-// API版本前缀 - 在Vercel环境中调整路径
-const API_VERSION = process.env.VERCEL ? '/v1' : '/api/v1';
+// API版本前缀 - 统一使用/api/v1
+const API_VERSION = '/api/v1';
 
 // 健康检查
 router.get('/health', (req, res) => {

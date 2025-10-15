@@ -3,16 +3,12 @@ const fs = require('fs').promises;
 const path = require('path');
 
 // 检查数据库类型
-const DATABASE_TYPE = process.env.DATABASE_TYPE || 'sqlite';
-const USE_SQLITE = DATABASE_TYPE === 'sqlite' || (process.env.USE_SQLITE === 'true' || !process.env.DB_HOST);
+const DATABASE_TYPE = process.env.DATABASE_TYPE || 'supabase';
 const USE_SUPABASE = DATABASE_TYPE === 'supabase';
 
-let sqliteModule = null;
 let supabaseModule = null;
 
-if (USE_SQLITE) {
-  sqliteModule = require('./sqlite');
-} else if (USE_SUPABASE) {
+if (USE_SUPABASE) {
   supabaseModule = require('./supabase');
 }
 
@@ -33,16 +29,14 @@ const dbConfig = {
 
 // 创建连接池（仅MySQL）
 let pool = null;
-if (!USE_SQLITE && !USE_SUPABASE) {
+if (!USE_SUPABASE) {
   pool = mysql.createPool(dbConfig);
 }
 
 // 数据库连接测试
 async function testConnection() {
   try {
-    if (USE_SQLITE) {
-      return await sqliteModule.initSQLite();
-    } else if (USE_SUPABASE) {
+    if (USE_SUPABASE) {
       return await supabaseModule.testSupabaseConnection();
     } else {
       const connection = await pool.getConnection();
@@ -61,10 +55,8 @@ async function initDatabase() {
   try {
     console.log('🔄 开始初始化数据库...');
     
-    if (USE_SQLITE) {
-      // SQLite初始化在testConnection中已完成
-      await sqliteModule.createTestUser();
-      console.log('✅ SQLite数据库初始化完成');
+    if (USE_SUPABASE) {
+      console.log('✅ Supabase数据库无需初始化');
     } else {
       // 读取初始化SQL文件
       const sqlPath = path.join(__dirname, '../database/init.sql');
@@ -87,13 +79,9 @@ async function initDatabase() {
 // 执行查询
 async function query(sql, params = []) {
   try {
-    if (USE_SQLITE) {
-      return await sqliteModule.query(sql, params);
-    } else if (USE_SUPABASE) {
+    if (USE_SUPABASE) {
       // 对于Supabase，我们需要将SQL查询转换为Supabase查询
-      // 这里先返回空数组，避免错误
-      console.log('⚠️  Supabase模式下的SQL查询需要转换，暂时返回空结果');
-      return [];
+      return await supabaseModule.query(sql, params);
     } else {
       const [rows] = await pool.execute(sql, params);
       return rows;
@@ -206,7 +194,6 @@ module.exports = {
   healthCheck,
   getStats,
   dbConfig,
-  USE_SQLITE,
   USE_SUPABASE,
   DATABASE_TYPE,
   supabaseModule

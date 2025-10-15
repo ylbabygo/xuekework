@@ -96,6 +96,29 @@ export interface ContentGenerationResponse {
   };
 }
 
+// 内容生成API响应类型
+export interface ContentGenerateResponse {
+  content: string;
+}
+
+export interface ContentOptimizeResponse {
+  optimizedContent: string;
+}
+
+// 模板相关类型
+export interface Template {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  prompt: string;
+  variables?: string[];
+}
+
+export interface Templates {
+  [category: string]: Template[];
+}
+
 // 物料库相关类型
 export interface Asset {
   id: string;

@@ -29,7 +29,6 @@
     "mysql2": "^3.6.0",
     "node-fetch": "^2.7.0",
     "redis": "^4.6.8",
-    "sqlite3": "^5.1.7",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

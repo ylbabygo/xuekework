@@ -818,7 +818,8 @@ function LearningResources() {
                   onChange={(e) => setNewResource({...newResource, description: e.target.value})}
                   placeholder="输入资源描述"
                   rows={3}
-                  className="w-full bg-black border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:border-white focus:outline-none transition-colors duration-200"
+                  className="w-full bg-black border border-gray-700 rounded-lg px-4 py-2 placeholder-gray-400 focus:border-white focus:outline-none transition-colors duration-200"
+                  style={{ color: 'var(--text-primary)' }}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -922,7 +923,8 @@ function LearningResources() {
                   onChange={(e) => setPlanForm({...planForm, goals: e.target.value})}
                   placeholder="描述您的学习目标，例如：掌握React开发技能"
                   rows={3}
-                  className="w-full bg-black border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:border-white focus:outline-none transition-colors duration-200"
+                  className="w-full bg-black border border-gray-700 rounded-lg px-4 py-2 placeholder-gray-400 focus:border-white focus:outline-none transition-colors duration-200"
+                  style={{ color: 'var(--text-primary)' }}
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

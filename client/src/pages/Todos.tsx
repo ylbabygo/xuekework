@@ -903,6 +903,7 @@ function Todos() {
                       rows={3}
                       value={listFormData.description}
                       onChange={(e) => setListFormData({ ...listFormData, description: e.target.value })}
+                      style={{ color: 'var(--text-primary)' }}
                     />
                   </div>
                   
@@ -973,6 +974,7 @@ function Todos() {
                       rows={3}
                       value={itemFormData.description}
                       onChange={(e) => setItemFormData({ ...itemFormData, description: e.target.value })}
+                      style={{ color: 'var(--text-primary)' }}
                     />
                   </div>
                   

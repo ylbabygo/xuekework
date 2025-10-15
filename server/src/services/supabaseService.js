@@ -139,6 +139,23 @@ class SupabaseService {
     return data;
   }
 
+  async getConversationById(id) {
+    const { data, error } = await this.client
+      .from('ai_conversations')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned
+        return null;
+      }
+      throw error;
+    }
+    return data;
+  }
+
   async getMessages(conversationId) {
     const { data, error } = await this.client
       .from('ai_messages')

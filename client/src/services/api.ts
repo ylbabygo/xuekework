@@ -390,6 +390,18 @@ export const settingsApi = {
     apiRequest('POST', '/settings/validate-all-api-keys', {}),
 };
 
+// 内容生成API
+export const contentApi = {
+  getTemplates: () =>
+    apiRequest('GET', '/content/templates'),
+  
+  generateContent: (data: any) =>
+    apiRequest('POST', '/content/generate', data),
+  
+  optimizeContent: (data: any) =>
+    apiRequest('POST', '/content/optimize', data),
+};
+
 // 系统API
 export const systemApi = {
   getHealth: () =>

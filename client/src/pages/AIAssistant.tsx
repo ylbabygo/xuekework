@@ -764,8 +764,12 @@ const AIAssistant: React.FC = () => {
                     placeholder={models.length === 0 ? "请先配置API密钥..." : "输入您的问题..."}
                     rows={1}
                     disabled={isLoading || models.length === 0}
-                    className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-2xl px-6 py-4 pr-16 text-black focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-300 resize-none transition-all duration-300 shadow-lg hover:shadow-xl placeholder-gray-400"
-                    style={{minHeight: '56px', maxHeight: '120px'}}
+                    className="w-full bg-white/90 backdrop-blur-sm border border-white/30 rounded-2xl px-6 py-4 pr-16 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-300 resize-none transition-all duration-300 shadow-lg hover:shadow-xl placeholder-gray-400"
+                    style={{
+                      minHeight: '56px', 
+                      maxHeight: '120px',
+                      color: 'var(--text-primary)'
+                    }}
                   />
                   <button 
                     onClick={sendMessage}

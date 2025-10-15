@@ -13,7 +13,10 @@
     "client:dev": "cd client && npm start",
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
-    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "check-deployment": "node check-deployment.js",
+    "deploy:vercel": "npm run check-deployment && vercel --prod",
+    "deploy:preview": "npm run check-deployment && vercel"
   },
   "keywords": [
     "AI",
@@ -44,7 +47,6 @@
     "mysql2": "^3.6.0",
     "node-fetch": "^2.7.0",
     "redis": "^4.6.8",
-    "sqlite3": "^5.1.7",
     "uuid": "^9.0.0"
   }
 }

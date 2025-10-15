@@ -94,11 +94,23 @@ class DatabaseAdapter {
   }
 
   async createConversation(conversationData) {
+    console.log('🔍 DatabaseAdapter.createConversation - useSupabase:', this.useSupabase);
     if (this.useSupabase) {
+      console.log('📡 使用Supabase创建对话');
       return await supabaseService.createConversation(conversationData);
     } else {
+      console.log('🗄️ 使用本地数据库创建对话');
       const { AIConversation } = require('../models');
       return await AIConversation.create(conversationData);
+    }
+  }
+
+  async getConversationById(id) {
+    if (this.useSupabase) {
+      return await supabaseService.getConversationById(id);
+    } else {
+      const { AIConversation } = require('../models');
+      return await AIConversation.findById(id);
     }
   }
 

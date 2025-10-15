@@ -42,8 +42,114 @@ async function testSupabaseConnection() {
   }
 }
 
+// SQL查询转换器
+async function query(sql, params = []) {
+  try {
+    // 简单的SQL解析和转换
+    const sqlLower = sql.toLowerCase().trim();
+    
+    if (sqlLower.startsWith('select')) {
+      // 处理SELECT查询
+      return await handleSelectQuery(sql, params);
+    } else if (sqlLower.startsWith('insert')) {
+      // 处理INSERT查询
+      return await handleInsertQuery(sql, params);
+    } else if (sqlLower.startsWith('update')) {
+      // 处理UPDATE查询
+      return await handleUpdateQuery(sql, params);
+    } else if (sqlLower.startsWith('delete')) {
+      // 处理DELETE查询
+      return await handleDeleteQuery(sql, params);
+    } else {
+      console.warn('不支持的SQL查询类型:', sql);
+      return [];
+    }
+  } catch (error) {
+    console.error('Supabase查询转换错误:', error);
+    throw error;
+  }
+}
+
+// 处理SELECT查询
+async function handleSelectQuery(sql, params) {
+  // 解析表名
+  const tableMatch = sql.match(/from\s+(\w+)/i);
+  if (!tableMatch) {
+    throw new Error('无法解析表名');
+  }
+  
+  const tableName = tableMatch[1];
+  let query = supabaseAdmin.from(tableName).select('*');
+  
+  // 处理WHERE条件
+  const whereMatch = sql.match(/where\s+(.+?)(?:\s+order\s+by|\s+limit|\s+group\s+by|$)/i);
+  if (whereMatch) {
+    const whereClause = whereMatch[1];
+    query = parseWhereClause(query, whereClause, params);
+  }
+  
+  const { data, error } = await query;
+  if (error) {
+    throw error;
+  }
+  
+  return data || [];
+}
+
+// 解析WHERE条件
+function parseWhereClause(query, whereClause, params) {
+  let paramIndex = 0;
+  
+  // 简单的条件解析 - 支持 column = ? 和 column = value
+  const conditions = whereClause.split(/\s+and\s+/i);
+  
+  conditions.forEach(condition => {
+    const trimmed = condition.trim();
+    
+    if (trimmed.includes('= ?')) {
+      // 参数化查询
+      const column = trimmed.split('=')[0].trim();
+      const value = params[paramIndex++];
+      query = query.eq(column, value);
+    } else if (trimmed.includes('=')) {
+      // 直接值查询
+      const [column, value] = trimmed.split('=').map(s => s.trim());
+      const cleanValue = value.replace(/['"]/g, '');
+      
+      if (cleanValue.toLowerCase() === 'true') {
+        query = query.eq(column, true);
+      } else if (cleanValue.toLowerCase() === 'false') {
+        query = query.eq(column, false);
+      } else {
+        query = query.eq(column, cleanValue);
+      }
+    }
+  });
+  
+  return query;
+}
+
+// 处理INSERT查询 (暂时简单实现)
+async function handleInsertQuery(sql, params) {
+  console.warn('INSERT查询转换暂未完全实现:', sql);
+  return [];
+}
+
+// 处理UPDATE查询 (暂时简单实现)
+async function handleUpdateQuery(sql, params) {
+  console.warn('UPDATE查询转换暂未完全实现:', sql);
+  return [];
+}
+
+// 处理DELETE查询 (暂时简单实现)
+async function handleDeleteQuery(sql, params) {
+  console.warn('DELETE查询转换暂未完全实现:', sql);
+  return [];
+}
+
 module.exports = {
   supabase,
   supabaseAdmin,
-  testSupabaseConnection
+  testSupabaseConnection,
+  query
 };

@@ -1400,6 +1400,7 @@ const AssetLibrary: React.FC = () => {
                   placeholder="请输入物料描述"
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                  style={{ color: 'var(--text-primary)' }}
                 />
               </div>
 
@@ -1559,6 +1560,7 @@ const AssetLibrary: React.FC = () => {
                         placeholder="请输入物料描述或关键词，AI将为您推荐相关标签..."
                         rows={3}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        style={{ color: 'var(--text-primary)' }}
                       />
                     </div>
                     <button

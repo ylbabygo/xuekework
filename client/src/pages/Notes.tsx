@@ -712,6 +712,7 @@ function Notes() {
                       onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                       rows={8}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      style={{ color: 'var(--text-primary)' }}
                       placeholder="请输入笔记内容"
                       required
                     />

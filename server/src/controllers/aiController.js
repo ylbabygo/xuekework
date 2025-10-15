@@ -3,8 +3,13 @@ const Message = require('../models/Message');
 const aiService = require('../services/aiService');
 const aiManager = require('../services/aiManager');
 const { query } = require('../config/database');
+const databaseAdapter = require('../adapters/databaseAdapter');
 
 class AIController {
+  constructor() {
+    this.dbAdapter = new DatabaseAdapter();
+  }
+
   // 创建新对话
   static async createConversation(req, res) {
     try {
@@ -26,7 +31,16 @@ class AIController {
         });
       }
 
-      const conversation = await Conversation.create(userId, title, model);
+      const { v4: uuidv4 } = require('uuid');
+      const conversationData = {
+        id: uuidv4(),
+        user_id: userId,
+        title: title,
+        model: model
+      };
+      console.log('🔍 准备创建对话:', JSON.stringify(conversationData, null, 2));
+      const conversation = await databaseAdapter.createConversation(conversationData);
+      console.log('✅ 对话创建结果:', JSON.stringify(conversation, null, 2));
 
       // 记录系统日志
       await query(
@@ -43,7 +57,7 @@ class AIController {
       res.status(201).json({
         success: true,
         message: '对话创建成功',
-        data: conversation.toJSON()
+        data: conversation
       });
     } catch (error) {
       console.error('创建对话错误:', error);
@@ -163,7 +177,7 @@ class AIController {
       }
 
       // 获取对话
-      const conversation = await Conversation.findById(id);
+      const conversation = await databaseAdapter.getConversationById(id);
       if (!conversation) {
         return res.status(404).json({
           success: false,
@@ -183,10 +197,19 @@ class AIController {
       const userTokens = aiService.estimateTokens(content);
 
       // 保存用户消息
-      const userMessage = await conversation.addMessage('user', content, userTokens);
+      const { v4: uuidv4 } = require('uuid');
+      const userMessageData = {
+        id: uuidv4(),
+        conversation_id: conversation.id,
+        role: 'user',
+        content: content,
+        tokens: userTokens,
+        created_at: new Date().toISOString()
+      };
+      const userMessage = await databaseAdapter.createMessage(userMessageData);
 
       // 获取对话历史
-      const messages = await conversation.getMessages();
+      const messages = await databaseAdapter.getMessages(conversation.id);
       const conversationHistory = messages.map(msg => ({
         role: msg.role,
         content: msg.content
@@ -210,15 +233,15 @@ class AIController {
       }
 
       // 保存AI回复
-      const assistantMessage = await conversation.addMessage(
-        'assistant',
-        aiResponse.content,
-        aiResponse.tokens,
-        {
-          model: aiResponse.model,
-          total_tokens: aiResponse.tokens
-        }
-      );
+      const assistantMessageData = {
+        id: uuidv4(),
+        conversation_id: conversation.id,
+        role: 'assistant',
+        content: aiResponse.content,
+        tokens: aiResponse.tokens,
+        created_at: new Date().toISOString()
+      };
+      const assistantMessage = await databaseAdapter.createMessage(assistantMessageData);
 
       // 记录系统日志
       await query(
@@ -240,9 +263,9 @@ class AIController {
       res.json({
         success: true,
         data: {
-          userMessage: userMessage.toJSON(),
-          assistantMessage: assistantMessage.toJSON(),
-          conversation: conversation.toJSON()
+          userMessage: userMessage,
+          assistantMessage: assistantMessage,
+          conversation: conversation
         }
       });
     } catch (error) {

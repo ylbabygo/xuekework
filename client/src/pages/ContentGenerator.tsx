@@ -21,20 +21,13 @@ import {
   Layers
 } from 'lucide-react';
 import { useAPIConfig } from '../contexts/APIConfigContext';
+import { useAuth } from '../contexts/AuthContext';
 import APIConfigGuard from '../components/APIConfigGuard';
-import { aiApi } from '../services/api';
+import { aiApi, contentApi } from '../services/api';
+import { ApiResponse, Template, Templates, ContentGenerateResponse, ContentOptimizeResponse } from '../types';
 import './ContentGenerator.css';
 
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  prompt: string;
-}
 
-interface Templates {
-  [key: string]: Template[];
-}
 
 interface Model {
   id: string;
@@ -50,6 +43,7 @@ interface BatchResult {
 
 function ContentGenerator() {
   const { hasValidAPI, isLoading: apiLoading } = useAPIConfig();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [contentType, setContentType] = useState('article');
   const [prompt, setPrompt] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
@@ -100,15 +94,8 @@ function ContentGenerator() {
 
   const loadTemplates = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/v1/content/templates', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const result = await response.json();
+      const result = await contentApi.getTemplates() as ApiResponse<Templates>;
+      if (result.success && result.data) {
         setTemplates(result.data);
       }
     } catch (error) {
@@ -155,8 +142,11 @@ function ContentGenerator() {
   }, [model]);
 
   useEffect(() => {
-    loadTemplates();
-  }, []);
+    // 只有在用户已认证且不在加载状态时才加载模板
+    if (isAuthenticated && !authLoading) {
+      loadTemplates();
+    }
+  }, [isAuthenticated, authLoading]);
 
   // 在API配置加载完成后加载模型
   useEffect(() => {
@@ -229,8 +219,6 @@ function ContentGenerator() {
 
     setIsGenerating(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      
       // 构建完整的提示词，包含内容类型和模板信息
       let fullPrompt = prompt;
       if (selectedTemplate) {
@@ -250,27 +238,20 @@ function ContentGenerator() {
         fullPrompt = `${typeContext[contentType] || '请生成内容：'}${prompt}`;
       }
 
-      const response = await fetch('/api/v1/content/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          type: contentType,
-          prompt: fullPrompt,
-          model: model,
-          options: {
-            temperature: temperature,
-            maxTokens: maxTokens
-          }
-        })
+      const result = await contentApi.generateContent({
+        type: contentType,
+        prompt: fullPrompt,
+        model: model,
+        options: {
+          temperature: temperature,
+          maxTokens: maxTokens
+        }
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          setGeneratedContent(result.data.content);
+      if (result.success) {
+        const response = result as ApiResponse<ContentGenerateResponse>;
+        if (response.data) {
+          setGeneratedContent(response.data.content);
           
           // 添加到历史记录
           const historyItem = {
@@ -279,19 +260,16 @@ function ContentGenerator() {
             contentType,
             template: selectedTemplate?.name || '自定义',
             prompt,
-            content: result.data.content,
+            content: response.data.content,
             model,
             temperature,
             maxTokens
           };
           setHistory(prev => [historyItem, ...prev.slice(0, 19)]); // 保留最近20条记录
+        }
         } else {
           alert(result.message || '生成失败');
         }
-      } else {
-        const error = await response.json();
-        alert(error.message || '生成失败');
-      }
     } catch (error) {
       console.error('生成内容失败:', error);
       alert('生成失败，请重试');
@@ -332,13 +310,8 @@ function ContentGenerator() {
           fullPrompt = `${typeContext[contentType] || '请生成内容：'}${prompt.trim()}`;
         }
 
-        const response = await fetch('/api/v1/content/generate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-          },
-          body: JSON.stringify({
+        try {
+          const result = await contentApi.generateContent({
             type: contentType,
             prompt: fullPrompt,
             model: model,
@@ -346,18 +319,21 @@ function ContentGenerator() {
               temperature: temperature,
               maxTokens: maxTokens
             }
-          })
-        });
+          });
 
-        if (response.ok) {
-          const result = await response.json();
           if (result.success) {
+            const response = result as ApiResponse<ContentGenerateResponse>;
             results.push({
               prompt: prompt.trim(),
-              content: result.data.content
+              content: response.data?.content || '生成失败'
+            });
+          } else {
+            results.push({
+              prompt: prompt.trim(),
+              content: '生成失败，请重试'
             });
           }
-        } else {
+        } catch (error) {
           results.push({
             prompt: prompt.trim(),
             content: '生成失败，请重试'
@@ -395,25 +371,18 @@ function ContentGenerator() {
 
     setIsOptimizing(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/v1/content/optimize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content: generatedContent,
-          type: optimizationType
-        })
+      const result = await contentApi.optimizeContent({
+        content: generatedContent,
+        type: optimizationType
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        setGeneratedContent(result.data.optimizedContent);
+      if (result.success) {
+        const response = result as ApiResponse<ContentOptimizeResponse>;
+        if (response.data) {
+          setGeneratedContent(response.data.optimizedContent);
+        }
       } else {
-        const error = await response.json();
-        alert(error.message || '优化失败');
+        alert(result.message || '优化失败');
       }
     } catch (error) {
       console.error('优化内容失败:', error);
@@ -426,31 +395,24 @@ function ContentGenerator() {
   const optimizeBatchContent = async (index: number, content: string, type: string = 'grammar') => {
     setBatchOptimizing(prev => ({ ...prev, [index]: true }));
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch('/api/v1/content/optimize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          content: content,
-          type: type
-        })
+      const result = await contentApi.optimizeContent({
+        content: content,
+        type: type
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        setBatchResults(prev => 
-          prev.map((item, i) => 
-            i === index 
-              ? { ...item, content: result.data.optimizedContent }
-              : item
-          )
-        );
+      if (result.success) {
+        const response = result as ApiResponse<ContentOptimizeResponse>;
+        if (response.data) {
+          setBatchResults(prev => 
+            prev.map((item, i) => 
+              i === index 
+                ? { ...item, content: response.data!.optimizedContent }
+                : item
+            )
+          );
+        }
       } else {
-        const error = await response.json();
-        alert(error.message || '优化失败');
+        alert(result.message || '优化失败');
       }
     } catch (error) {
       console.error('优化内容失败:', error);
