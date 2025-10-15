@@ -43,7 +43,8 @@ const corsOptions = {
       'http://localhost:3001',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
-      'https://xuekework.vercel.app'
+      'https://xuekework.vercel.app',
+      'https://xuekework-47ukcw0n2-yulis-projects-ad9ada99.vercel.app'
     ];
     
     // 开发环境允许所有来源（默认为开发环境）
@@ -52,11 +53,21 @@ const corsOptions = {
     }
     
     // 生产环境检查域名
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('不允许的CORS来源'));
+    if (!origin) {
+      return callback(null, true);
     }
+    
+    // 检查是否在允许列表中
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    
+    // 检查是否是Vercel域名（支持所有Vercel子域名）
+    if (origin.match(/^https:\/\/.*\.vercel\.app$/)) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('不允许的CORS来源: ' + origin));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -173,4 +184,7 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
-module.exports = { app, initializeApp };
+// 为了兼容Vercel函数，直接导出app
+module.exports = app;
+module.exports.app = app;
+module.exports.initializeApp = initializeApp;

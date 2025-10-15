@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端登录功能测试</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 10px; 
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .success { background-color: rgba(76, 175, 80, 0.3); border-color: rgba(76, 175, 80, 0.5); }
+        .error { background-color: rgba(244, 67, 54, 0.3); border-color: rgba(244, 67, 54, 0.5); }
+        .info { background-color: rgba(33, 150, 243, 0.3); border-color: rgba(33, 150, 243, 0.5); }
+        button { 
+            padding: 12px 20px; 
+            margin: 8px; 
+            cursor: pointer; 
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        button:hover { transform: translateY(-2px); }
+        pre { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 15px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            font-size: 12px;
+        }
+        input {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            width: 200px;
+        }
+        input::placeholder { color: rgba(255, 255, 255, 0.7); }
+        h1 { text-align: center; margin-bottom: 30px; }
+        h3 { color: #fff; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 前端登录功能测试</h1>
+        
+        <div class="section info">
+            <h3>📋 测试说明</h3>
+            <p>这个页面用于测试修复后的前端登录功能，包括API调用、CORS配置和认证流程。</p>
+        </div>
+        
+        <div class="section">
+            <h3>1. API连接测试</h3>
+            <button onclick="testAPIConnection()">测试API连接</button>
+            <div id="api-result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>2. 登录功能测试</h3>
+            <div>
+                <input type="text" id="username" placeholder="用户名" value="admin">
+                <input type="password" id="password" placeholder="密码" value="admin123">
+                <button onclick="testLogin()">测试登录</button>
+            </div>
+            <div id="login-result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>3. Token验证测试</h3>
+            <button onclick="testTokenValidation()">验证当前Token</button>
+            <div id="token-result"></div>
+        </div>
+        
+        <div class="section">
+            <h3>4. 本地存储检查</h3>
+            <button onclick="checkLocalStorage()">检查本地存储</button>
+            <button onclick="clearLocalStorage()">清除本地存储</button>
+            <div id="storage-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 获取API基础URL
+        function getApiBaseUrl() {
+            const hostname = window.location.hostname;
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return 'http://localhost:5000/api/v1';
+            } else if (hostname.includes('vercel.app')) {
+                return '/api/v1';
+            } else {
+                return '/api/v1';
+            }
+        }
+
+        // 测试API连接
+        async function testAPIConnection() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>🔄 正在测试API连接...</p>';
+            
+            try {
+                const baseUrl = getApiBaseUrl();
+                console.log('API Base URL:', baseUrl);
+                
+                // 测试健康检查
+                const healthResponse = await fetch(`${baseUrl.replace('/api/v1', '')}/health`);
+                const healthData = await healthResponse.json();
+                
+                // 测试API端点
+                const apiResponse = await fetch(`${baseUrl}/test`);
+                const apiData = await apiResponse.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ API连接成功</h4>
+                        <p><strong>API Base URL:</strong> ${baseUrl}</p>
+                        <p><strong>健康检查:</strong> ${healthData.message}</p>
+                        <p><strong>API测试:</strong> ${apiData.message}</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ API连接失败</h4>
+                        <p><strong>错误:</strong> ${error.message}</p>
+                        <p><strong>API Base URL:</strong> ${getApiBaseUrl()}</p>
+                    </div>
+                `;
+                console.error('API连接测试失败:', error);
+            }
+        }
+
+        // 测试登录
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            resultDiv.innerHTML = '<p>🔄 正在测试登录...</p>';
+            
+            try {
+                const baseUrl = getApiBaseUrl();
+                const response = await fetch(`${baseUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // 保存到本地存储
+                    localStorage.setItem('auth_token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ 登录成功</h4>
+                            <p><strong>用户:</strong> ${data.data.user.username}</p>
+                            <p><strong>角色:</strong> ${data.data.user.role}</p>
+                            <p><strong>Token:</strong> ${data.data.token ? '已生成并保存' : '未生成'}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ 登录失败</h4>
+                            <p><strong>状态码:</strong> ${response.status}</p>
+                            <p><strong>错误信息:</strong> ${data.message}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ 登录请求失败</h4>
+                        <p><strong>错误:</strong> ${error.message}</p>
+                        <p>可能是网络问题或CORS配置问题</p>
+                    </div>
+                `;
+                console.error('登录测试失败:', error);
+            }
+        }
+
+        // 测试Token验证
+        async function testTokenValidation() {
+            const resultDiv = document.getElementById('token-result');
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ 没有找到Token</h4>
+                        <p>请先登录获取Token</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>🔄 正在验证Token...</p>';
+            
+            try {
+                const baseUrl = getApiBaseUrl();
+                const response = await fetch(`${baseUrl}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Token验证成功</h4>
+                            <p><strong>用户:</strong> ${data.data.username}</p>
+                            <p><strong>邮箱:</strong> ${data.data.email || '未设置'}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Token验证失败</h4>
+                            <p><strong>状态码:</strong> ${response.status}</p>
+                            <p><strong>错误信息:</strong> ${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Token验证请求失败</h4>
+                        <p><strong>错误:</strong> ${error.message}</p>
+                    </div>
+                `;
+                console.error('Token验证失败:', error);
+            }
+        }
+
+        // 检查本地存储
+        function checkLocalStorage() {
+            const resultDiv = document.getElementById('storage-result');
+            const token = localStorage.getItem('auth_token');
+            const user = localStorage.getItem('user');
+            
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <h4>📦 本地存储状态</h4>
+                    <p><strong>Token:</strong> ${token ? '存在' : '不存在'}</p>
+                    <p><strong>用户信息:</strong> ${user ? '存在' : '不存在'}</p>
+                    ${token ? `<p><strong>Token预览:</strong> ${token.substring(0, 50)}...</p>` : ''}
+                    ${user ? `<pre><strong>用户信息:</strong>\n${JSON.stringify(JSON.parse(user), null, 2)}</pre>` : ''}
+                </div>
+            `;
+        }
+
+        // 清除本地存储
+        function clearLocalStorage() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            
+            const resultDiv = document.getElementById('storage-result');
+            resultDiv.innerHTML = `
+                <div class="success">
+                    <h4>✅ 本地存储已清除</h4>
+                    <p>所有认证信息已删除</p>
+                </div>
+            `;
+        }
+
+        // 页面加载时自动检查
+        window.onload = function() {
+            console.log('前端登录测试页面已加载');
+            console.log('当前域名:', window.location.hostname);
+            console.log('API Base URL:', getApiBaseUrl());
+        };
+    </script>
+</body>
+</html>

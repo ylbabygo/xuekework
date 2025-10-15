@@ -6,33 +6,32 @@
 - [ ] 确保本地测试通过（前端 + 后端）
 - [ ] 确保Supabase项目已创建并配置
 
-## 🚂 Railway后端部署
+## ▲ Vercel全栈部署
 
-### 1. 创建Railway项目
-- [ ] 访问 [Railway.app](https://railway.app)
-- [ ] 使用GitHub账号登录
-- [ ] 点击 "New Project" → "Deploy from GitHub repo"
-- [ ] 选择你的仓库
+### 1. 准备Vercel全栈部署
+- [ ] 确保项目根目录有 `vercel.json` 配置文件
+- [ ] 确保 `api/index.js` 文件存在（Vercel Serverless Functions入口）
+- [ ] 确保前端构建配置正确
 
 ### 2. 配置环境变量
-在Railway项目设置中添加以下环境变量：
+在Vercel项目设置中添加以下环境变量：
 
 ```
 NODE_ENV=production
-PORT=3001
 SUPABASE_URL=https://jnvdwevywpsgunnvcxys.supabase.co
 SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmR3ZXZ5d3BzZ3VubnZjeHlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzNzE1MTQsImV4cCI6MjA3NTk0NzUxNH0.HQUxA5cRhc-GrC_G12OFreR7yyWHgAVPK7Hiv46nShY
 JWT_SECRET=your-super-secret-jwt-key-here-change-this
 JWT_EXPIRES_IN=7d
 USE_SUPABASE=true
+REACT_APP_API_URL=/api/v1
 ```
 
 ### 3. 验证部署
 - [ ] 等待部署完成
-- [ ] 访问 `https://your-app.railway.app/api/v1/health`
+- [ ] 访问 `https://your-app.vercel.app/api/v1/health`
 - [ ] 确认返回健康状态
 
-**Railway URL:** `_____________________`
+**Vercel URL:** `_____________________`
 
 ## ▲ Vercel前端部署
 
@@ -51,7 +50,7 @@ USE_SUPABASE=true
 在Vercel项目设置中添加以下环境变量：
 
 ```
-REACT_APP_API_URL=https://your-app.railway.app/api/v1
+REACT_APP_API_URL=/api/v1
 REACT_APP_SUPABASE_URL=https://jnvdwevywpsgunnvcxys.supabase.co
 REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmR3ZXZ5d3BzZ3VubnZjeHlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzNzE1MTQsImV4cCI6MjA3NTk0NzUxNH0.HQUxA5cRhc-GrC_G12OFreR7yyWHgAVPK7Hiv46nShY
 REACT_APP_NAME=学科运营AI工作台
@@ -63,9 +62,9 @@ GENERATE_SOURCEMAP=false
 
 ## 🔧 CORS配置
 
-### 更新Railway环境变量
-- [ ] 在Railway中添加：`CORS_ORIGIN=https://your-app.vercel.app`
-- [ ] 重新部署Railway应用
+### 更新Vercel环境变量
+- [ ] 确保所有环境变量已正确配置
+- [ ] 重新部署Vercel应用
 
 ## 🧪 部署测试
 
@@ -79,8 +78,8 @@ GENERATE_SOURCEMAP=false
 
 ### 测试URL
 - 前端：`https://your-app.vercel.app`
-- 后端健康检查：`https://your-app.railway.app/api/v1/health`
-- 后端API：`https://your-app.railway.app/api/v1`
+- 后端健康检查：`https://your-app.vercel.app/api/v1/health`
+- 后端API：`https://your-app.vercel.app/api/v1`
 
 ## 🔒 安全检查
 
@@ -103,22 +102,21 @@ GENERATE_SOURCEMAP=false
 ## 🚨 故障排除
 
 ### 常见问题
-1. **CORS错误**：检查Railway中的CORS_ORIGIN环境变量
+1. **CORS错误**：检查Vercel中的环境变量配置
 2. **API连接失败**：检查Vercel中的REACT_APP_API_URL
 3. **认证失败**：检查Supabase配置和密钥
 4. **构建失败**：检查package.json和依赖项
 
 ### 调试工具
-- Railway日志：项目 → Deployments → 查看日志
 - Vercel日志：项目 → Functions → 查看日志
+- Vercel部署日志：项目 → Deployments → 查看构建日志
 - 浏览器开发者工具：Network和Console标签
 
 ## ✅ 部署完成
 
 恭喜！你的学科AI工作台已成功部署到生产环境。
 
-- 🌐 前端地址：`_____________________`
-- 🚂 后端地址：`_____________________`
+- 🌐 应用地址：`_____________________`
 - 📊 Supabase控制台：https://supabase.com/dashboard
 
 记得定期备份数据库和监控应用性能！

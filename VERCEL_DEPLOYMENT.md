@@ -43,10 +43,10 @@ GENERATE_SOURCEMAP=false
 - 将后端代码改造为Serverless Functions
 - 适合轻量级API服务
 
-### 选项2: Railway
-- 支持Node.js应用直接部署
-- 提供数据库服务
-- 部署命令：`railway login && railway deploy`
+### 选项2: Render
+- 免费的Node.js托管服务
+- 自动从GitHub部署
+- 部署命令：通过Git连接自动部署
 
 ### 选项3: Heroku
 - 经典的Node.js部署平台

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清理浏览器缓存 - Railway错误修复</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .error-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.3s;
+            min-width: 150px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .button.danger {
+            background: #dc3545;
+        }
+        .button.danger:hover {
+            background: #c82333;
+        }
+        .button.success {
+            background: #28a745;
+        }
+        .button.success:hover {
+            background: #218838;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .status.warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .manual-steps {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .manual-steps h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .manual-steps ol {
+            margin: 10px 0;
+        }
+        .manual-steps li {
+            margin: 8px 0;
+        }
+        code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Railway错误修复工具</h1>
+        <p class="subtitle">彻底清理浏览器缓存，解决Railway API错误</p>
+        
+        <div class="error-info">
+            <h3>🚨 错误说明</h3>
+            <p>错误：<code>net::ERR_FAILED https://web-production-6102.up.railway.app/auth/login</code></p>
+            <p><strong>原因：</strong>浏览器缓存了旧的Railway API配置，需要彻底清理。</p>
+        </div>
+
+        <div class="button-grid">
+            <button class="button" onclick="quickFix()">🚀 一键修复</button>
+            <button class="button" onclick="clearLocalStorage()">📦 清理本地存储</button>
+            <button class="button" onclick="clearSessionStorage()">🗂️ 清理会话存储</button>
+            <button class="button" onclick="clearAllCaches()">💾 清理所有缓存</button>
+            <button class="button" onclick="clearServiceWorkers()">⚙️ 清理Service Workers</button>
+            <button class="button" onclick="clearIndexedDB()">🗄️ 清理IndexedDB</button>
+            <button class="button" onclick="forceReload()">🔄 强制刷新</button>
+            <button class="button danger" onclick="nuclearOption()">☢️ 核弹级清理</button>
+        </div>
+
+        <div class="progress" id="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div class="debug-info" id="debugInfo">
+            <strong>调试信息：</strong><br>
+            正在检查浏览器状态...
+        </div>
+
+        <div class="manual-steps">
+            <h3>📋 手动清理步骤（如果自动清理无效）</h3>
+            <ol>
+                <li><strong>Chrome/Edge:</strong> 按 <code>Ctrl+Shift+Delete</code> → 选择"全部时间" → 勾选所有选项 → 清理数据</li>
+                <li><strong>Firefox:</strong> 按 <code>Ctrl+Shift+Delete</code> → 选择"全部" → 勾选所有选项 → 立即清理</li>
+                <li><strong>开发者工具方法:</strong> 按 <code>F12</code> → Network标签 → 右键刷新按钮 → "清空缓存并硬性重新加载"</li>
+                <li><strong>隐私模式测试:</strong> 打开隐私/无痕模式窗口测试应用</li>
+                <li><strong>重启浏览器:</strong> 完全关闭浏览器后重新打开</li>
+                <li><strong>检查扩展:</strong> 禁用所有浏览器扩展后测试</li>
+            </ol>
+            
+            <h4>🔧 高级修复方法</h4>
+            <ul>
+                <li><strong>重置浏览器:</strong> Chrome设置 → 高级 → 重置并清理 → 将设置还原为原始默认设置</li>
+                <li><strong>清理DNS缓存:</strong> 命令行运行 <code>ipconfig /flushdns</code> (Windows) 或 <code>sudo dscacheutil -flushcache</code> (Mac)</li>
+                <li><strong>检查hosts文件:</strong> 确保没有railway.app相关的条目</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let debugLog = [];
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}`;
+            debugLog.push(logMessage);
+            console.log(logMessage);
+            updateDebugInfo();
+        }
+
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.innerHTML = '<strong>调试信息：</strong><br>' + debugLog.slice(-10).join('<br>');
+        }
+
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+
+        function updateProgress(percent) {
+            const progress = document.getElementById('progress');
+            const progressBar = document.getElementById('progressBar');
+            progress.style.display = 'block';
+            progressBar.style.width = percent + '%';
+            
+            if (percent >= 100) {
+                setTimeout(() => {
+                    progress.style.display = 'none';
+                }, 1000);
+            }
+        }
+
+        async function quickFix() {
+            log('开始一键修复...');
+            updateProgress(0);
+            
+            try {
+                // 步骤1: 清理存储
+                localStorage.clear();
+                sessionStorage.clear();
+                log('✅ 清理本地存储和会话存储');
+                updateProgress(20);
+                
+                // 步骤2: 清理缓存
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    log(`✅ 清理了 ${cacheNames.length} 个缓存`);
+                }
+                updateProgress(40);
+                
+                // 步骤3: 清理Service Workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map(reg => reg.unregister()));
+                    log(`✅ 注销了 ${registrations.length} 个Service Worker`);
+                }
+                updateProgress(60);
+                
+                // 步骤4: 清理IndexedDB
+                await clearIndexedDBDatabases();
+                updateProgress(80);
+                
+                // 步骤5: 强制刷新
+                log('🔄 准备强制刷新页面...');
+                updateProgress(100);
+                
+                showStatus('✅ 一键修复完成！页面将在3秒后刷新...', 'success');
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 3000);
+                
+            } catch (error) {
+                log(`❌ 一键修复失败: ${error.message}`);
+                showStatus('❌ 一键修复失败，请尝试手动清理', 'error');
+            }
+        }
+
+        function clearLocalStorage() {
+            try {
+                const keys = Object.keys(localStorage);
+                localStorage.clear();
+                log(`✅ 清理本地存储 (${keys.length} 项)`);
+                showStatus('✅ 本地存储已清理');
+            } catch (error) {
+                log(`❌ 清理本地存储失败: ${error.message}`);
+                showStatus('❌ 清理本地存储失败', 'error');
+            }
+        }
+
+        function clearSessionStorage() {
+            try {
+                const keys = Object.keys(sessionStorage);
+                sessionStorage.clear();
+                log(`✅ 清理会话存储 (${keys.length} 项)`);
+                showStatus('✅ 会话存储已清理');
+            } catch (error) {
+                log(`❌ 清理会话存储失败: ${error.message}`);
+                showStatus('❌ 清理会话存储失败', 'error');
+            }
+        }
+
+        async function clearAllCaches() {
+            try {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    log(`✅ 清理所有缓存 (${cacheNames.length} 个)`);
+                    showStatus(`✅ 已清理 ${cacheNames.length} 个缓存`);
+                } else {
+                    log('⚠️ 浏览器不支持缓存API');
+                    showStatus('⚠️ 浏览器不支持缓存API', 'warning');
+                }
+            } catch (error) {
+                log(`❌ 清理缓存失败: ${error.message}`);
+                showStatus('❌ 清理缓存失败', 'error');
+            }
+        }
+
+        async function clearServiceWorkers() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map(reg => reg.unregister()));
+                    log(`✅ 注销Service Workers (${registrations.length} 个)`);
+                    showStatus(`✅ 已注销 ${registrations.length} 个Service Worker`);
+                } else {
+                    log('⚠️ 浏览器不支持Service Worker');
+                    showStatus('⚠️ 浏览器不支持Service Worker', 'warning');
+                }
+            } catch (error) {
+                log(`❌ 清理Service Workers失败: ${error.message}`);
+                showStatus('❌ 清理Service Workers失败', 'error');
+            }
+        }
+
+        async function clearIndexedDB() {
+            try {
+                await clearIndexedDBDatabases();
+                showStatus('✅ IndexedDB已清理');
+            } catch (error) {
+                log(`❌ 清理IndexedDB失败: ${error.message}`);
+                showStatus('❌ 清理IndexedDB失败', 'error');
+            }
+        }
+
+        async function clearIndexedDBDatabases() {
+            if ('indexedDB' in window) {
+                try {
+                    const databases = await indexedDB.databases();
+                    await Promise.all(databases.map(db => {
+                        return new Promise((resolve, reject) => {
+                            const deleteReq = indexedDB.deleteDatabase(db.name);
+                            deleteReq.onsuccess = () => resolve();
+                            deleteReq.onerror = () => reject(deleteReq.error);
+                        });
+                    }));
+                    log(`✅ 清理IndexedDB (${databases.length} 个数据库)`);
+                } catch (error) {
+                    log(`⚠️ 清理IndexedDB部分失败: ${error.message}`);
+                }
+            }
+        }
+
+        function forceReload() {
+            log('🔄 执行强制刷新...');
+            showStatus('🔄 强制刷新页面...', 'success');
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 1000);
+        }
+
+        async function nuclearOption() {
+            if (!confirm('⚠️ 这将清理所有浏览器数据！确定要继续吗？')) {
+                return;
+            }
+            
+            log('☢️ 执行核弹级清理...');
+            updateProgress(0);
+            
+            try {
+                // 清理所有存储
+                localStorage.clear();
+                sessionStorage.clear();
+                updateProgress(25);
+                
+                // 清理所有缓存
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                }
+                updateProgress(50);
+                
+                // 清理Service Workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map(reg => reg.unregister()));
+                }
+                updateProgress(75);
+                
+                // 清理IndexedDB
+                await clearIndexedDBDatabases();
+                updateProgress(100);
+                
+                log('☢️ 核弹级清理完成');
+                showStatus('☢️ 核弹级清理完成！请重启浏览器', 'success');
+                
+            } catch (error) {
+                log(`❌ 核弹级清理失败: ${error.message}`);
+                showStatus('❌ 核弹级清理失败', 'error');
+            }
+        }
+
+        // 页面加载时的检查
+        window.addEventListener('load', () => {
+            log('🔍 开始检查浏览器状态...');
+            
+            // 检查存储
+            const localKeys = Object.keys(localStorage);
+            const sessionKeys = Object.keys(sessionStorage);
+            log(`📦 本地存储: ${localKeys.length} 项`);
+            log(`🗂️ 会话存储: ${sessionKeys.length} 项`);
+            
+            // 检查Railway相关存储
+            const railwayItems = [];
+            localKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value && value.includes('railway.app')) {
+                    railwayItems.push(key);
+                }
+            });
+            
+            if (railwayItems.length > 0) {
+                log(`⚠️ 发现 ${railwayItems.length} 个Railway相关存储项`);
+                showStatus(`⚠️ 发现Railway相关缓存，建议立即清理`, 'warning');
+            } else {
+                log('✅ 未发现Railway相关存储');
+            }
+            
+            // 检查当前URL
+            const currentUrl = window.location.href;
+            log(`🌐 当前URL: ${currentUrl}`);
+            
+            // 检查API配置
+            if (window.localStorage.getItem('api_base_url')) {
+                log(`🔗 API基础URL: ${window.localStorage.getItem('api_base_url')}`);
+            }
+        });
+    </script>
+</body>
+</html>

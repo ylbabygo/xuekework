@@ -16,8 +16,8 @@ const settingsRoutes = require('./settings');
 const dashboardRoutes = require('./dashboard');
 const usersRoutes = require('./users');
 
-// API版本前缀
-const API_VERSION = '/api/v1';
+// API版本前缀 - 在Vercel环境中调整路径
+const API_VERSION = process.env.VERCEL ? '/v1' : '/api/v1';
 
 // 健康检查
 router.get('/health', (req, res) => {
@@ -259,6 +259,178 @@ if (process.env.NODE_ENV === 'development') {
     });
   });
 }
+
+// 重置管理员密码的端点（仅用于调试）
+router.post('/reset-admin-password', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const supabaseService = require('../services/supabaseService');
+    
+    // 生成新的密码哈希
+    const newPassword = 'admin123';
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // 更新数据库中的密码
+    const { data, error } = await supabaseService.client
+      .from('users')
+      .update({ password_hash: hashedPassword })
+      .eq('username', 'admin')
+      .select();
+    
+    if (error) {
+      throw error;
+    }
+    
+    // 验证新密码
+    const user = await supabaseService.getUserByUsername('admin');
+    const isValid = await bcrypt.compare(newPassword, user.password_hash);
+    
+    res.json({
+      success: true,
+      message: '管理员密码已重置',
+      password_updated: !!data && data.length > 0,
+      password_valid: isValid,
+      new_hash_preview: hashedPassword.substring(0, 15) + '...'
+    });
+    
+  } catch (error) {
+    console.error('重置密码失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '重置密码失败',
+      error: error.message
+    });
+  }
+});
+
+// 激活管理员账户的端点（仅用于调试）
+router.post('/activate-admin', async (req, res) => {
+  try {
+    const supabaseService = require('../services/supabaseService');
+    
+    // 激活管理员账户
+    const { data, error } = await supabaseService.client
+      .from('users')
+      .update({ is_active: true })
+      .eq('username', 'admin')
+      .select();
+    
+    if (error) {
+      throw error;
+    }
+    
+    // 获取更新后的用户信息
+    const user = await supabaseService.getUserByUsername('admin');
+    
+    res.json({
+      success: true,
+      message: '管理员账户已激活',
+      user_updated: !!data && data.length > 0,
+      is_active: user ? user.is_active : false,
+      user_info: user ? {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        is_active: user.is_active
+      } : null
+    });
+    
+  } catch (error) {
+    console.error('激活账户失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '激活账户失败',
+      error: error.message
+    });
+  }
+});
+
+// 查看用户详细信息的端点（仅用于调试）
+router.get('/user-info/:username', async (req, res) => {
+  try {
+    const supabaseService = require('../services/supabaseService');
+    const { username } = req.params;
+    
+    // 获取用户信息
+    const user = await supabaseService.getUserByUsername(username);
+    
+    if (!user) {
+      return res.json({
+        success: false,
+        message: '用户不存在',
+        username: username
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: '用户信息获取成功',
+      user_info: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        is_active: user.is_active,
+        status: user.status,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+        has_password_hash: !!user.password_hash,
+        password_hash_length: user.password_hash ? user.password_hash.length : 0
+      }
+    });
+    
+  } catch (error) {
+    console.error('获取用户信息失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取用户信息失败',
+      error: error.message
+    });
+  }
+});
+
+// 激活用户status字段的端点（仅用于调试）
+router.post('/activate-user-status/:username', async (req, res) => {
+  try {
+    const supabaseService = require('../services/supabaseService');
+    const { username } = req.params;
+    
+    // 激活用户status
+    const { data, error } = await supabaseService.client
+      .from('users')
+      .update({ status: 'active' })
+      .eq('username', username)
+      .select();
+    
+    if (error) {
+      throw error;
+    }
+    
+    // 获取更新后的用户信息
+    const user = await supabaseService.getUserByUsername(username);
+    
+    res.json({
+      success: true,
+      message: `用户${username}的status已激活`,
+      user_updated: !!data && data.length > 0,
+      status: user ? user.status : null,
+      user_info: user ? {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        is_active: user.is_active,
+        status: user.status
+      } : null
+    });
+    
+  } catch (error) {
+    console.error('激活用户status失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '激活用户status失败',
+      error: error.message
+    });
+  }
+});
 
 // 404处理
 router.use('*', (req, res) => {

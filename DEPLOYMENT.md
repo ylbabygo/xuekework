@@ -4,7 +4,7 @@
 
 这是一个全栈应用，需要分别部署前端和后端：
 - **前端**：部署到 Vercel
-- **后端**：部署到 Railway/Render/Heroku 等支持 Node.js 的平台
+- **后端**：部署到 Vercel Serverless Functions 或 Render/Heroku 等支持 Node.js 的平台
 
 ## 默认账号信息
 
@@ -18,24 +18,31 @@
 - 用户名: `liuli` 密码: `xueke666`
 - 用户名: `wangxin` 密码: `xueke666`
 
-## 后端部署 (必须先完成)
+## Vercel 全栈部署 (推荐)
 
-### Railway 部署 (推荐)
+### 一键部署到Vercel
 
-1. 登录 [Railway](https://railway.app)
-2. 点击 "New Project" → "Deploy from GitHub repo"
+1. 登录 [Vercel](https://vercel.com)
+2. 点击 "New Project" → "Import Git Repository"
 3. 选择你的仓库 `ylbabygo/xuekework`
-4. Railway 会自动检测到 Node.js 项目
+4. 配置项目设置：
+   - **Framework Preset**: Other
+   - **Root Directory**: `./`
+   - **Build Command**: `cd client && npm install && npm run build`
+   - **Output Directory**: `client/build`
 5. 设置环境变量：
    ```
-   USE_SQLITE=true
-   JWT_SECRET=your-super-secret-jwt-key-here
    NODE_ENV=production
-   PORT=3001
+   USE_SUPABASE=true
+   SUPABASE_URL=your-supabase-url
+   SUPABASE_ANON_KEY=your-supabase-anon-key
+   JWT_SECRET=your-super-secret-jwt-key-here
+   JWT_EXPIRES_IN=7d
+   REACT_APP_API_URL=/api/v1
    ```
-6. 部署完成后，记录后端URL（如：`https://your-app.railway.app`）
+6. 部署完成后，你将获得一个完整的全栈应用URL
 
-### Render 部署
+### 替代方案：Render 部署
 
 1. 登录 [Render](https://render.com)
 2. 点击 "New" → "Web Service"
@@ -46,7 +53,7 @@
    - **Start Command**: `npm start`
 5. 设置环境变量（同上）
 
-## Vercel 前端部署
+## Vercel 前端部署 (仅在使用分离部署时)
 
 ### 1. 准备工作
 
@@ -73,18 +80,18 @@
 
 5. 设置环境变量：
    ```
-   REACT_APP_API_URL=https://your-backend-url.railway.app/api/v1
+   REACT_APP_API_URL=https://your-backend-url.vercel.app/api/v1
    GENERATE_SOURCEMAP=false
    ```
    
-   ⚠️ **重要**：将 `your-backend-url.railway.app` 替换为你实际的后端部署URL
+   ⚠️ **重要**：将 `your-backend-url.vercel.app` 替换为你实际的后端部署URL
 
 6. 点击 "Deploy"
 
 ### 4. 后端部署建议
 
 后端可以部署到以下平台：
-- **Railway**: 支持Node.js，自动部署
+- **Vercel Serverless Functions**: 与前端集成，推荐使用
 - **Render**: 免费层支持，易于配置
 - **Heroku**: 经典选择，但需要付费
 - **DigitalOcean App Platform**: 性能稳定

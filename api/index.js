@@ -29,12 +29,26 @@ console.log('- DB_PASSWORD:', process.env.DB_PASSWORD ? '✅ 已设置' : '❌ �
 
 try {
   // 导入服务器应用
-  const { app } = require('../server/src/app');
+  const app = require('../server/src/app');
   
   // 包装处理函数以捕获错误
   module.exports = (req, res) => {
     try {
       console.log(`📥 收到请求: ${req.method} ${req.url}`);
+      console.log(`📋 请求头:`, JSON.stringify(req.headers, null, 2));
+      
+      // 设置CORS头
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      
+      // 处理预检请求
+      if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+      }
+      
       return app(req, res);
     } catch (error) {
       console.error('❌ 请求处理错误:', error);

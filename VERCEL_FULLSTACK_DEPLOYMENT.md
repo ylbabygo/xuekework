@@ -135,7 +135,7 @@ export default async function handler(req, res) {
 
 ## ✅ 优势对比
 
-| 特性 | Vercel全栈 | Railway分离 |
+| 特性 | Vercel全栈 | 传统分离部署 |
 |------|------------|-------------|
 | 管理复杂度 | 低 | 中 |
 | 成本 | 低 | 中 |
@@ -154,8 +154,7 @@ export default async function handler(req, res) {
 
 如果Vercel API Routes不满足需求，推荐使用：
 1. **Render**：免费层，支持持久化服务
-2. **Railway**：配置简单，适合Node.js
-3. **Supabase Edge Functions**：与Supabase深度集成
+2. **Supabase Edge Functions**：与Supabase深度集成，支持Deno运行时
 
 ---
 

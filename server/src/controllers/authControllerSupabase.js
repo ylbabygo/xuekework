@@ -167,6 +167,18 @@ class AuthControllerSupabase {
       }
 
       if (!user) {
+        // 记录登录失败日志
+        await databaseAdapter.createSystemLog({
+          action: 'login_failed',
+          details: {
+            message: '登录失败 - 用户不存在',
+            username: username,
+            reason: 'user_not_found',
+            ip_address: req.ip,
+            user_agent: req.get('User-Agent')
+          }
+        });
+
         return res.status(401).json({
           success: false,
           message: '用户名或密码错误'
@@ -178,10 +190,9 @@ class AuthControllerSupabase {
       if (!isValidPassword) {
         // 记录登录失败日志
         await databaseAdapter.createSystemLog({
-          level: 'warning',
-          message: '登录失败 - 密码错误',
-          metadata: {
-            action: 'login_failed',
+          action: 'login_failed',
+          details: {
+            message: '登录失败 - 密码错误',
             username: user.username,
             reason: 'invalid_password',
             ip_address: req.ip,
@@ -197,7 +208,20 @@ class AuthControllerSupabase {
       }
 
       // 检查账户状态
-      if (user.status !== 'active') {
+      if (!user.is_active) {
+        // 记录登录失败日志
+        await databaseAdapter.createSystemLog({
+          action: 'login_failed',
+          details: {
+            message: '登录失败 - 账户被禁用',
+            username: user.username,
+            reason: 'account_disabled',
+            ip_address: req.ip,
+            user_agent: req.get('User-Agent')
+          },
+          user_id: user.id
+        });
+
         return res.status(401).json({
           success: false,
           message: '账户已被禁用，请联系管理员'
@@ -216,12 +240,10 @@ class AuthControllerSupabase {
 
       // 记录登录成功日志
       await databaseAdapter.createSystemLog({
-        level: 'info',
-        message: '用户登录成功',
-        metadata: {
-          action: 'login_success',
+        action: 'login_success',
+        details: {
+          message: '用户登录成功',
           username: user.username,
-          remember_me: rememberMe,
           ip_address: req.ip,
           user_agent: req.get('User-Agent')
         },
@@ -308,10 +330,9 @@ class AuthControllerSupabase {
 
       // 记录更新日志
       await databaseAdapter.createSystemLog({
-        level: 'info',
-        message: '用户信息更新',
-        metadata: {
-          action: 'profile_update',
+        action: 'profile_update',
+        details: {
+          message: '用户信息更新',
           updated_fields: Object.keys(updateData),
           ip_address: req.ip,
           user_agent: req.get('User-Agent')
@@ -396,10 +417,9 @@ class AuthControllerSupabase {
 
       // 记录密码修改日志
       await databaseAdapter.createSystemLog({
-        level: 'info',
-        message: '用户密码修改',
-        metadata: {
-          action: 'password_change',
+        action: 'password_change',
+        details: {
+          message: '用户密码修改',
           ip_address: req.ip,
           user_agent: req.get('User-Agent')
         },
@@ -554,7 +574,8 @@ class AuthControllerSupabase {
         await databaseAdapter.createSystemLog({
           action: 'logout',
           details: {
-            message: '用户登出',
+            message: '用户登出成功',
+            username: req.user.username,
             ip_address: req.ip,
             user_agent: req.get('User-Agent')
           },
@@ -615,10 +636,9 @@ class AuthControllerSupabase {
 
       // 记录系统日志
       await databaseAdapter.createSystemLog({
-        level: 'info',
-        message: '用户账户删除',
-        metadata: {
-          action: 'account_delete',
+        action: 'account_delete',
+        details: {
+          message: '用户账户删除',
           soft_delete: true,
           ip_address: req.ip,
           user_agent: req.get('User-Agent')

@@ -3,11 +3,10 @@ Write-Host "=== Supabase后端部署平台选择 ===" -ForegroundColor Green
 
 Write-Host "`n可选的部署平台：" -ForegroundColor Yellow
 Write-Host "1. Vercel全栈 (推荐) - 前后端统一管理" -ForegroundColor Cyan
-Write-Host "2. Railway - 独立后端服务" -ForegroundColor Cyan  
-Write-Host "3. Render - 免费层友好" -ForegroundColor Cyan
-Write-Host "4. Supabase Edge Functions - 原生集成" -ForegroundColor Cyan
+Write-Host "2. 本地开发模式 - 快速开发调试" -ForegroundColor Cyan  
+Write-Host "3. Supabase Edge Functions - 原生集成" -ForegroundColor Cyan
 
-$choice = Read-Host "`n请选择部署平台 (1-4)"
+$choice = Read-Host "`n请选择部署平台 (1-3)"
 
 switch ($choice) {
     "1" {
@@ -33,46 +32,19 @@ REACT_APP_API_URL=/api/v1
         }
     }
     "2" {
-        Write-Host "`n✅ 选择了 Railway部署" -ForegroundColor Green
-        Write-Host "优势：支持持久化、无冷启动、适合长时间运行" -ForegroundColor White
-        Write-Host "适合：需要后台任务、WebSocket、文件处理" -ForegroundColor White
-        Write-Host "`n📚 详细指南：SUPABASE_VERCEL_DEPLOYMENT.md" -ForegroundColor Yellow
+        Write-Host "`n✅ 选择了 本地开发模式" -ForegroundColor Green
+        Write-Host "优势：完全本地控制、快速开发调试" -ForegroundColor White
+        Write-Host "适合：开发测试、学习使用" -ForegroundColor White
         
-        $confirm = Read-Host "`n是否开始Railway部署？(y/n)"
+        $confirm = Read-Host "`n是否启动本地开发服务器？(y/n)"
         if ($confirm -eq "y") {
-            Write-Host "`n🚂 开始Railway部署..." -ForegroundColor Green
-            Write-Host "1. 访问 https://railway.app" -ForegroundColor Cyan
-            Write-Host "2. 使用GitHub登录" -ForegroundColor Cyan
-            Write-Host "3. 创建新项目 -> Deploy from GitHub repo" -ForegroundColor Cyan
-            Write-Host "4. 选择你的仓库" -ForegroundColor Cyan
-            Write-Host "5. 配置环境变量：" -ForegroundColor Cyan
-            Write-Host @"
-NODE_ENV=production
-PORT=3001
-SUPABASE_URL=https://jnvdwevywpsgunnvcxys.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpudmR3ZXZ5d3BzZ3VubnZjeHlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzNzE1MTQsImV4cCI6MjA3NTk0NzUxNH0.HQUxA5cRhc-GrC_G12OFreR7yyWHgAVPK7Hiv46nShY
-JWT_SECRET=your-super-secret-jwt-key
-USE_SUPABASE=true
-"@ -ForegroundColor Gray
+            Write-Host "`n💻 启动本地开发服务器..." -ForegroundColor Green
+            Write-Host "1. 后端服务器：cd server && npm start" -ForegroundColor Cyan
+            Write-Host "2. 前端服务器：cd client && npm start" -ForegroundColor Cyan
+            Write-Host "3. 访问：http://localhost:3000" -ForegroundColor Cyan
         }
     }
     "3" {
-        Write-Host "`n✅ 选择了 Render部署" -ForegroundColor Green
-        Write-Host "优势：免费层慷慨、自动部署、支持Docker" -ForegroundColor White
-        Write-Host "注意：免费层有休眠机制" -ForegroundColor Yellow
-        
-        $confirm = Read-Host "`n是否开始Render部署？(y/n)"
-        if ($confirm -eq "y") {
-            Write-Host "`n🌐 开始Render部署..." -ForegroundColor Green
-            Write-Host "1. 访问 https://render.com" -ForegroundColor Cyan
-            Write-Host "2. 使用GitHub登录" -ForegroundColor Cyan
-            Write-Host "3. 创建新的Web Service" -ForegroundColor Cyan
-            Write-Host "4. 连接你的仓库" -ForegroundColor Cyan
-            Write-Host "5. 设置构建命令：cd server && npm install" -ForegroundColor Cyan
-            Write-Host "6. 设置启动命令：cd server && npm start" -ForegroundColor Cyan
-        }
-    }
-    "4" {
         Write-Host "`n✅ 选择了 Supabase Edge Functions" -ForegroundColor Green
         Write-Host "优势：与Supabase深度集成、全球边缘计算" -ForegroundColor White
         Write-Host "适合：API密集型应用" -ForegroundColor White
@@ -92,6 +64,5 @@ USE_SUPABASE=true
 }
 
 Write-Host "`n📋 需要帮助？查看对应的部署文档：" -ForegroundColor Yellow
-Write-Host "- Vercel全栈：VERCEL_FULLSTACK_DEPLOYMENT.md" -ForegroundColor Cyan
-Write-Host "- Railway：SUPABASE_VERCEL_DEPLOYMENT.md" -ForegroundColor Cyan
+Write-Host "- Vercel全栈：VERCEL_DEPLOYMENT_GUIDE.md" -ForegroundColor Cyan
 Write-Host "- 部署检查清单：DEPLOYMENT_CHECKLIST.md" -ForegroundColor Cyan

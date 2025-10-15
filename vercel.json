@@ -10,7 +10,10 @@
     },
     {
       "src": "api/index.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "maxDuration": 30
+      }
     }
   ],
   "routes": [
@@ -24,19 +27,27 @@
     },
     {
       "src": "/static/(.*)",
-      "dest": "/client/static/$1"
+      "dest": "/client/build/static/$1"
     },
     {
       "src": "/favicon.ico",
-      "dest": "/client/favicon.ico"
+      "dest": "/client/build/favicon.ico"
     },
     {
       "src": "/manifest.json",
-      "dest": "/client/manifest.json"
+      "dest": "/client/build/manifest.json"
+    },
+    {
+      "src": "/logo(.*).png",
+      "dest": "/client/build/logo$1.png"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
+      "dest": "/client/build/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/client/index.html"
+      "dest": "/client/build/index.html"
     }
   ],
   "env": {
