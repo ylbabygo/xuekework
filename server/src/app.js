@@ -44,7 +44,11 @@ const corsOptions = {
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
       'https://xuekework.vercel.app',
-      'https://xuekework-47ukcw0n2-yulis-projects-ad9ada99.vercel.app'
+      'https://xuekework-yulis-projects-ad9ada99.vercel.app',
+      'https://xuekework-ylbabygo-yulis-projects-ad9ada99.vercel.app',
+      'https://xuekework-am3tl5y6u-yulis-projects-ad9ada99.vercel.app',
+      'https://xuekework-pnhl8irw2-yulis-projects-ad9ada99.vercel.app',
+      'https://xuekework-2hgrcjvvr-yulis-projects-ad9ada99.vercel.app'
     ];
     
     // 开发环境允许所有来源（默认为开发环境）

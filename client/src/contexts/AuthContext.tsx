@@ -135,27 +135,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           try {
             const user = JSON.parse(storedUser);
             
-            // 验证token是否有效 - 尝试获取当前用户信息
-            try {
-              const response = await authApi.getCurrentUser();
-              console.log('Token验证结果:', response.success);
-              
-              if (response.success && response.data) {
-                dispatch({ type: 'AUTH_SUCCESS', payload: { user: response.data } });
-                console.log('认证状态初始化成功');
-              } else {
-                console.log('Token无效，清除存储');
-                localStorage.removeItem('user');
-                localStorage.removeItem('auth_token');
-                dispatch({ type: 'AUTH_FAILURE' });
+            // 对于简单认证，直接使用存储的用户信息，不进行网络验证
+            // 这避免了在页面加载时的网络请求导致的ERR_ABORTED错误
+            dispatch({ type: 'AUTH_SUCCESS', payload: { user } });
+            console.log('认证状态初始化成功（使用本地存储）');
+            
+            // 可选：在后台验证token（不阻塞UI）
+            setTimeout(async () => {
+              try {
+                const response = await authApi.getCurrentUser();
+                if (!response.success) {
+                  console.log('后台验证失败，清除存储');
+                  localStorage.removeItem('user');
+                  localStorage.removeItem('auth_token');
+                  dispatch({ type: 'AUTH_FAILURE' });
+                }
+              } catch (error) {
+                console.log('后台验证出错，但不影响当前状态');
               }
-            } catch (error: any) {
-              console.error('Token验证失败:', error);
-              // 如果token验证失败，清除本地存储
-              localStorage.removeItem('auth_token');
-              localStorage.removeItem('user');
-              dispatch({ type: 'AUTH_FAILURE' });
-            }
+            }, 1000);
+            
           } catch (error) {
             console.error('解析用户信息失败:', error);
             localStorage.removeItem('user');
@@ -172,9 +171,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // 添加小延迟确保localStorage操作完成
-    const timer = setTimeout(initAuth, 100);
-    return () => clearTimeout(timer);
+    // 立即执行，不需要延迟
+    initAuth();
   }, []);
 
   const value: AuthContextType = {

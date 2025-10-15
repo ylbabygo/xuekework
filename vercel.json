@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "xueke-ai-platform",
   "builds": [
     {
       "src": "client/package.json",
@@ -11,7 +10,10 @@
     },
     {
       "src": "server/src/server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
     }
   ],
   "routes": [
@@ -20,16 +22,31 @@
       "dest": "/server/src/server.js"
     },
     {
-      "src": "/(.*)",
+      "src": "/health",
+      "dest": "/server/src/server.js"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/client/build/static/$1"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/client/build/manifest.json"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/client/build/favicon.ico"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
       "dest": "/client/build/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/client/build/index.html"
     }
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "server/src/server.js": {
-      "maxDuration": 30
-    }
   }
 }
