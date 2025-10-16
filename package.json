@@ -1,0 +1,12 @@
+{
+  "name": "xueke-ai-workspace",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd client && npm install && npm run build",
+    "start": "cd client && npm start"
+  },
+  "engines": {
+    "node": "22.x",
+    "npm": ">=8.0.0"
+  }
+}
