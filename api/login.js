@@ -69,7 +69,7 @@ module.exports = async function handler(req, res) {
     const user = users[0];
 
     // 验证密码
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
     
     if (!isValidPassword) {
       return res.status(401).json({
