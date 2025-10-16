@@ -71,6 +71,18 @@ module.exports = async (req, res) => {
       return;
     }
 
+    // 简单的健康检查，不依赖复杂的初始化
+    if (req.url === '/health' || req.url === '/api/health') {
+      res.status(200).json({
+        success: true,
+        message: '服务运行正常',
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'production'
+      });
+      return;
+    }
+
     // 确保应用已初始化
     await setupRoutes();
     
@@ -81,7 +93,8 @@ module.exports = async (req, res) => {
     res.status(500).json({
       success: false,
       message: '服务器内部错误',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
