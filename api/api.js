@@ -1,9 +1,21 @@
-// 捕获所有 /api/* 请求并转发到 Express 应用
+// Vercel API函数 - 处理所有API请求
+import { createServer } from 'http';
 
-export default function handler(req, res) {
+// 动态导入Express应用
+let app;
+
+async function getApp() {
+  if (!app) {
+    // 使用动态导入来加载CommonJS模块
+    const appModule = await import('../server/src/app.js');
+    app = appModule.default || appModule;
+  }
+  return app;
+}
+
+export default async function handler(req, res) {
   try {
-    // 动态导入Express应用
-    const app = require('../server/src/app');
+    const expressApp = await getApp();
     
     // 设置CORS头
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,13 +29,12 @@ export default function handler(req, res) {
     }
     
     // 调用Express应用
-    return app(req, res);
+    return expressApp(req, res);
   } catch (error) {
     console.error('API函数错误:', error);
     res.status(500).json({
       error: 'Internal Server Error',
-      message: error.message,
-      stack: error.stack
+      message: error.message
     });
   }
 }
