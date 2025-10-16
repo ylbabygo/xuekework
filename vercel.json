@@ -19,6 +19,10 @@
       "dest": "/api/health"
     },
     {
+      "src": "/api/simple-test",
+      "dest": "/api/simple-test"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/[...slug]"
     },
