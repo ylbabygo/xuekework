@@ -1,10 +1,7 @@
 // 捕获所有 /api/* 请求并转发到 Express 应用
 
-export default function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
-    // 动态导入Express应用
-    const app = require('../server/src/app');
-    
     // 设置CORS头
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -16,6 +13,13 @@ export default function handler(req, res) {
       return;
     }
     
+    // 导入Express应用
+    const app = require('../server/src/app');
+    
+    // 确保数据库已初始化
+    const { initializeApp } = require('../server/src/app');
+    await initializeApp();
+    
     // 调用Express应用
     return app(req, res);
   } catch (error) {
@@ -23,7 +27,7 @@ export default function handler(req, res) {
     res.status(500).json({
       error: 'Internal Server Error',
       message: error.message,
-      stack: error.stack
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
-}
+};

@@ -5,9 +5,21 @@ require('dotenv').config();
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const dbPassword = process.env.DB_PASSWORD;
 
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
   throw new Error('Missing Supabase environment variables');
+}
+
+// 构建数据库连接URL（如果有密码）
+let databaseUrl = supabaseUrl;
+if (dbPassword) {
+  // 从 Supabase URL 中提取项目引用
+  const urlMatch = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/);
+  if (urlMatch) {
+    const projectRef = urlMatch[1];
+    databaseUrl = `postgresql://postgres:${dbPassword}@db.${projectRef}.supabase.co:5432/postgres`;
+  }
 }
 
 // 创建Supabase客户端（用于前端交互）
@@ -151,5 +163,8 @@ module.exports = {
   supabase,
   supabaseAdmin,
   testSupabaseConnection,
-  query
+  query,
+  databaseUrl,
+  supabaseUrl,
+  dbPassword
 };
