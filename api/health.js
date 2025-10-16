@@ -1,4 +1,4 @@
-// Vercel API 函数
+// 健康检查API端点
 export default function handler(req, res) {
   // 设置CORS头
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,20 +14,21 @@ export default function handler(req, res) {
   }
 
   // 记录请求信息用于调试
-  console.log('收到请求:', {
+  console.log('健康检查请求:', {
     method: req.method,
     url: req.url,
     headers: req.headers
   });
 
-  // 返回API状态
+  // 健康检查响应
   res.status(200).json({
     success: true,
-    message: 'API服务运行正常',
+    message: '健康检查通过 - 服务运行正常',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
     environment: process.env.NODE_ENV || 'production',
     url: req.url,
-    method: req.method
+    method: req.method,
+    status: 'healthy'
   });
 }
