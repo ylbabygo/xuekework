@@ -1,4 +1,6 @@
 {
+  "buildCommand": "cd client && npm run build",
+  "outputDirectory": "client/build",
   "functions": {
     "api/*.js": {
       "runtime": "nodejs18.x"
@@ -11,7 +13,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/build/$1"
+      "dest": "/$1"
     }
   ]
 }
