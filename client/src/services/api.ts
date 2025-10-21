@@ -30,13 +30,13 @@ const createApiInstance = (): AxiosInstance => {
     
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       // 本地开发环境
-      return 'http://localhost:5000/api/v1';
+      return 'http://localhost:3000/api';
     } else if (hostname.includes('vercel.app') || hostname.includes('netlify.app')) {
       // 生产环境 - 使用Vercel函数API路径
-      return '/api/v1';
+      return '/api';
     } else {
       // 其他环境，使用相对路径
-      return '/api/v1';
+      return '/api';
     }
   };
 
@@ -189,7 +189,7 @@ export const aiApi = {
     apiRequest('POST', `/ai/conversations/${conversationId}/messages`, data),
   
   generateContent: (request: ContentGenerationRequest, apiKey?: string) =>
-    apiRequest<ContentGenerationResponse>('POST', '/ai/generate-content', { ...request, apiKey }),
+    apiRequest<ContentGenerationResponse>('POST', '/content/generate', { ...request, apiKey }),
   
   analyzeData: (data: any, query: string, apiKey?: string) =>
     apiRequest('POST', '/ai/analyze-data', { data, query, apiKey }),
