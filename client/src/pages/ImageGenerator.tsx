@@ -1,328 +1,294 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Container, 
-  Typography, 
-  TextField, 
-  Button, 
-  Grid, 
-  Card, 
-  CardContent, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem, 
-  Slider, 
+import {
+  Card,
+  Button,
+  Input,
+  Select,
+  Typography,
+  Row,
+  Col,
+  Space,
   Alert,
-  CircularProgress,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions
-} from '@mui/material';
-import { 
-  Image as ImageIcon, 
-  Download as DownloadIcon, 
-  Refresh as RefreshIcon,
-  Settings as SettingsIcon,
-  Palette as PaletteIcon
-} from '@mui/icons-material';
-import { imageGeneratorService } from '../services/imageGenerator';
+  Spin,
+  Tag,
+  Slider,
+  Form,
+  message,
+  Image,
+  Divider
+} from 'antd';
+import { DownloadOutlined, PictureOutlined, BgColorsOutlined } from '@ant-design/icons';
+import { generateImages, ImageType, getImageTypes, getPromptSuggestions } from '../services/imageGenerator';
+
+const { Title, Text, Paragraph } = Typography;
+const { Option } = Select;
+const { TextArea } = Input;
 
 interface GeneratedImage {
-  id: string;
   url: string;
   prompt: string;
-  type: string;
-  createdAt: string;
+  timestamp: number;
 }
 
 const ImageGenerator: React.FC = () => {
   const [prompt, setPrompt] = useState('');
-  const [imageType, setImageType] = useState('general');
+  const [imageType, setImageType] = useState<ImageType>('poster');
   const [numberOfImages, setNumberOfImages] = useState(1);
   const [apiKey, setApiKey] = useState('AIzaSyDYS1QvxZd7UhzCooQIy8ikSvw1XHDlvz4');
-  const [loading, setLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
-  const [error, setError] = useState('');
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const imageTypes = [
-    { value: 'general', label: '通用图片', icon: '🖼️', description: '适合各种用途的通用图片' },
-    { value: 'poster', label: '宣传海报', icon: '📋', description: '专业的宣传海报设计' },
-    { value: 'social', label: '社交媒体', icon: '📱', description: '适合社交平台分享的图片' },
-    { value: 'banner', label: '横幅广告', icon: '🎯', description: '网站横幅和广告设计' },
-    { value: 'logo', label: '标志设计', icon: '🎨', description: '品牌标志和图标设计' },
-    { value: 'illustration', label: '插画艺术', icon: '🎭', description: '艺术插画和创意图像' },
-    { value: 'product', label: '产品展示', icon: '📦', description: '产品摄影和展示图片' },
-    { value: 'avatar', label: '头像肖像', icon: '👤', description: '个人头像和肖像图片' },
-    { value: 'background', label: '背景图案', icon: '🌅', description: '背景图片和纹理图案' }
-  ];
+  const imageTypes = getImageTypes();
+  const promptSuggestions = getPromptSuggestions(imageType);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      setError('请输入图片描述');
+      message.error('请输入图片描述');
       return;
     }
 
     if (!apiKey.trim()) {
-      setError('请设置API密钥');
+      message.error('请输入API密钥');
       return;
     }
 
-    setLoading(true);
-    setError('');
+    setIsGenerating(true);
+    setError(null);
 
     try {
-      const result = await imageGeneratorService.generateImages({
-        prompt: prompt.trim(),
+      const result = await generateImages({
+        prompt,
         imageType,
         numberOfImages,
-        apiKey: apiKey.trim()
+        apiKey
       });
 
-      if (result.success) {
-        setGeneratedImages(prev => [...result.data.images, ...prev]);
+      if (result.success && result.images) {
+        const newImages: GeneratedImage[] = result.images.map(url => ({
+          url,
+          prompt,
+          timestamp: Date.now()
+        }));
+        setGeneratedImages(prev => [...newImages, ...prev]);
+        message.success(`成功生成 ${result.images.length} 张图片`);
       } else {
-        setError(result.message || '图片生成失败');
+        throw new Error(result.error || '生成失败');
       }
-    } catch (err: any) {
-      setError(err.message || '网络错误，请重试');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '生成图片时发生错误';
+      setError(errorMessage);
+      message.error(errorMessage);
     } finally {
-      setLoading(false);
+      setIsGenerating(false);
     }
   };
 
-  const handleDownload = async (imageUrl: string, imageName: string) => {
+  const handleDownload = async (imageUrl: string, index: number) => {
     try {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${imageName}_${Date.now()}.png`;
+      link.download = `generated-image-${imageType}-${index + 1}-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('下载失败:', error);
+      message.success('图片下载成功');
+    } catch (err) {
+      message.error('下载失败');
     }
   };
 
-  const selectedImageType = imageTypes.find(type => type.value === imageType);
+  const handleDownloadAll = async () => {
+    for (let i = 0; i < generatedImages.length; i++) {
+      await handleDownload(generatedImages[i].url, i);
+      // 添加延迟避免浏览器阻止多个下载
+      if (i < generatedImages.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4, textAlign: 'center' }}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ 
-          fontWeight: 'bold',
-          background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
-          <PaletteIcon sx={{ fontSize: 40, mr: 2, verticalAlign: 'middle' }} />
-          AI 图片生成器
-        </Typography>
-        <Typography variant="h6" color="text.secondary">
-          使用 Google AI Studio 生成高质量的创意图片
-        </Typography>
-      </Box>
+    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        {/* 页面标题 */}
+        <div style={{ textAlign: 'center' }}>
+          <Title level={2}>
+            <PictureOutlined style={{ marginRight: '8px' }} />
+            AI 图片生成器
+          </Title>
+          <Paragraph type="secondary">
+            使用 Google AI Studio 生成高质量的AI图片
+          </Paragraph>
+        </div>
 
-      <Grid container spacing={4}>
-        {/* 左侧控制面板 */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ position: 'sticky', top: 20 }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  生成设置
-                </Typography>
-                <IconButton onClick={() => setSettingsOpen(true)} size="small">
-                  <SettingsIcon />
-                </IconButton>
-              </Box>
-
-              {/* 图片类型选择 */}
-              <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>图片类型</InputLabel>
-                <Select
-                  value={imageType}
-                  label="图片类型"
-                  onChange={(e) => setImageType(e.target.value)}
-                >
-                  {imageTypes.map((type) => (
-                    <MenuItem key={type.value} value={type.value}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <span style={{ marginRight: 8 }}>{type.icon}</span>
+        {/* 配置面板 */}
+        <Card title="生成配置" extra={<BgColorsOutlined />}>
+          <Form layout="vertical">
+            <Row gutter={[16, 16]}>
+              <Col xs={24} md={12}>
+                <Form.Item label="图片类型">
+                  <Select
+                    value={imageType}
+                    onChange={setImageType}
+                    style={{ width: '100%' }}
+                  >
+                    {imageTypes.map(type => (
+                      <Option key={type.value} value={type.value}>
                         {type.label}
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col xs={24} md={12}>
+                <Form.Item label={`生成数量: ${numberOfImages}`}>
+                  <Slider
+                    min={1}
+                    max={4}
+                    value={numberOfImages}
+                    onChange={setNumberOfImages}
+                    marks={{
+                      1: '1',
+                      2: '2',
+                      3: '3',
+                      4: '4'
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-              {/* 当前选择的类型信息 */}
-              {selectedImageType && (
-                <Box sx={{ mb: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {selectedImageType.description}
-                  </Typography>
-                </Box>
-              )}
-
-              {/* 提示词输入 */}
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="图片描述"
-                placeholder="请详细描述您想要生成的图片..."
+            <Form.Item label="图片描述">
+              <TextArea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                sx={{ mb: 3 }}
+                placeholder="请描述您想要生成的图片..."
+                rows={4}
+                maxLength={500}
+                showCount
               />
+            </Form.Item>
 
-              {/* 图片数量 */}
-              <Box sx={{ mb: 3 }}>
-                <Typography gutterBottom>
-                  生成数量: {numberOfImages}
-                </Typography>
-                <Slider
-                  value={numberOfImages}
-                  onChange={(_, value) => setNumberOfImages(value as number)}
-                  min={1}
-                  max={4}
-                  marks
-                  step={1}
-                  valueLabelDisplay="auto"
-                />
-              </Box>
+            {promptSuggestions.length > 0 && (
+              <Form.Item label="提示词建议">
+                <Space wrap>
+                  {promptSuggestions.map((suggestion, index) => (
+                    <Tag
+                      key={index}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => setPrompt(prev => prev + (prev ? ', ' : '') + suggestion)}
+                    >
+                      {suggestion}
+                    </Tag>
+                  ))}
+                </Space>
+              </Form.Item>
+            )}
 
-              {/* 生成按钮 */}
+            <Form.Item label="API 密钥">
+              <Input.Password
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="请输入您的 Google AI Studio API 密钥"
+              />
+            </Form.Item>
+
+            <Form.Item>
               <Button
-                fullWidth
-                variant="contained"
+                type="primary"
                 size="large"
                 onClick={handleGenerate}
-                disabled={loading || !prompt.trim()}
-                startIcon={loading ? <CircularProgress size={20} /> : <ImageIcon />}
-                sx={{ mb: 2 }}
+                loading={isGenerating}
+                disabled={!prompt.trim() || !apiKey.trim()}
+                style={{ width: '100%' }}
               >
-                {loading ? '生成中...' : '生成图片'}
+                {isGenerating ? '生成中...' : '生成图片'}
               </Button>
+            </Form.Item>
+          </Form>
+        </Card>
 
-              {/* 错误提示 */}
-              {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                  {error}
-                </Alert>
-              )}
-
-              {/* 快速提示词 */}
-              <Box>
-                <Typography variant="subtitle2" gutterBottom>
-                  快速提示词:
-                </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {[
-                    '科技感海报',
-                    '卡通风格',
-                    '简约设计',
-                    '复古风格',
-                    '未来主义'
-                  ].map((tag) => (
-                    <Chip
-                      key={tag}
-                      label={tag}
-                      size="small"
-                      onClick={() => setPrompt(prev => prev ? `${prev}, ${tag}` : tag)}
-                      sx={{ cursor: 'pointer' }}
-                    />
-                  ))}
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* 右侧图片展示区域 */}
-        <Grid item xs={12} md={8}>
-          {generatedImages.length === 0 ? (
-            <Card sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Box sx={{ textAlign: 'center', color: 'text.secondary' }}>
-                <ImageIcon sx={{ fontSize: 80, mb: 2 }} />
-                <Typography variant="h6">
-                  还没有生成图片
-                </Typography>
-                <Typography variant="body2">
-                  输入描述并选择类型开始生成
-                </Typography>
-              </Box>
-            </Card>
-          ) : (
-            <Grid container spacing={2}>
-              {generatedImages.map((image) => (
-                <Grid item xs={12} sm={6} key={image.id}>
-                  <Card sx={{ position: 'relative', overflow: 'hidden' }}>
-                    <Box
-                      component="img"
-                      src={image.url}
-                      alt={image.prompt}
-                      sx={{
-                        width: '100%',
-                        height: 250,
-                        objectFit: 'cover'
-                      }}
-                    />
-                    <CardContent>
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {image.prompt}
-                      </Typography>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                        <Chip 
-                          label={imageTypes.find(t => t.value === image.type)?.label || image.type} 
-                          size="small" 
-                        />
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDownload(image.url, image.type)}
-                        >
-                          <DownloadIcon />
-                        </IconButton>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </Grid>
-      </Grid>
-
-      {/* 设置对话框 */}
-      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>API 设置</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Google AI Studio API Key"
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            sx={{ mt: 2 }}
-            helperText="请输入您的 Google AI Studio API 密钥"
+        {/* 错误提示 */}
+        {error && (
+          <Alert
+            message="生成失败"
+            description={error}
+            type="error"
+            showIcon
+            closable
+            onClose={() => setError(null)}
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSettingsOpen(false)}>取消</Button>
-          <Button onClick={() => setSettingsOpen(false)} variant="contained">保存</Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+        )}
+
+        {/* 生成的图片 */}
+        {generatedImages.length > 0 && (
+          <Card
+            title={`生成的图片 (${generatedImages.length})`}
+            extra={
+              <Button
+                type="primary"
+                icon={<DownloadOutlined />}
+                onClick={handleDownloadAll}
+              >
+                下载全部
+              </Button>
+            }
+          >
+            <Row gutter={[16, 16]}>
+              {generatedImages.map((image, index) => (
+                <Col xs={24} sm={12} md={8} lg={6} key={`${image.timestamp}-${index}`}>
+                  <Card
+                    hoverable
+                    cover={
+                      <Image
+                        src={image.url}
+                        alt={`Generated ${index + 1}`}
+                        style={{ height: '200px', objectFit: 'cover' }}
+                        preview={{
+                          mask: '预览'
+                        }}
+                      />
+                    }
+                    actions={[
+                      <Button
+                        type="text"
+                        icon={<DownloadOutlined />}
+                        onClick={() => handleDownload(image.url, index)}
+                      >
+                        下载
+                      </Button>
+                    ]}
+                  >
+                    <Card.Meta
+                      description={
+                        <Text ellipsis={{ tooltip: image.prompt }}>
+                          {image.prompt}
+                        </Text>
+                      }
+                    />
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </Card>
+        )}
+
+        {/* 加载状态 */}
+        {isGenerating && (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <Spin size="large" />
+            <div style={{ marginTop: '16px' }}>
+              <Text>正在生成图片，请稍候...</Text>
+            </div>
+          </div>
+        )}
+      </Space>
+    </div>
   );
 };
 
