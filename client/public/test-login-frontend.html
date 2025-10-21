@@ -107,11 +107,11 @@
         function getApiBaseUrl() {
             const hostname = window.location.hostname;
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                return 'http://localhost:5000/api/v1';
+                return 'http://localhost:3000/api';
             } else if (hostname.includes('vercel.app')) {
-                return '/api/v1';
+                return '/api';
             } else {
-                return '/api/v1';
+                return '/api';
             }
         }
 
@@ -125,7 +125,7 @@
                 console.log('API Base URL:', baseUrl);
                 
                 // 测试健康检查
-                const healthResponse = await fetch(`${baseUrl.replace('/api/v1', '')}/health`);
+                const healthResponse = await fetch(`${baseUrl}/health`);
                 const healthData = await healthResponse.json();
                 
                 // 测试API端点
