@@ -414,4 +414,7 @@ export const systemApi = {
     apiRequest('GET', '/admin/logs', { params }),
 };
 
+// 导出apiRequest函数供其他服务使用
+export { apiRequest };
+
 export default api;
