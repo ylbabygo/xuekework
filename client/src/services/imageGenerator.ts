@@ -203,3 +203,8 @@ class ImageGeneratorService {
 }
 
 export const imageGeneratorService = new ImageGeneratorService();
+
+// 导出常用函数以便直接使用
+export const getImageTypes = () => imageGeneratorService.getImageTypes();
+export const validateApiKey = (apiKey: string) => imageGeneratorService.validateApiKey(apiKey);
+export const getPromptSuggestions = (imageType: string) => imageGeneratorService.getPromptSuggestions(imageType);
