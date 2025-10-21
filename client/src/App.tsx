@@ -16,6 +16,7 @@ import TodosPage from './pages/Todos';
 import AIToolsPage from './pages/AITools';
 import SettingsPage from './pages/Settings';
 import AdminUsersPage from './pages/AdminUsers';
+import ImageGeneratorPage from './pages/ImageGenerator';
 
 // 导入布局组件
 import Layout from './components/Layout/MainLayout';
@@ -78,6 +79,7 @@ function AppRoutes() {
         <Route path="notes" element={<NotesPage />} />
         <Route path="todos" element={<TodosPage />} />
         <Route path="ai-tools" element={<AIToolsPage />} />
+        <Route path="image-generator" element={<ImageGeneratorPage />} />
         <Route path="settings" element={<SettingsPage />} />
         
         {/* 管理员专用路由 */}

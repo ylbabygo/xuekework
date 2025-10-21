@@ -15,6 +15,7 @@ import {
   Cog6ToothIcon,
   UserGroupIcon,
   XMarkIcon,
+  PhotoIcon,
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -29,6 +30,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { name: '仪表板', href: '/dashboard', icon: HomeIcon },
     { name: 'AI助手', href: '/ai-assistant', icon: ChatBubbleLeftRightIcon },
     { name: '内容生成', href: '/content-generator', icon: PencilSquareIcon },
+    { name: '图片生成', href: '/image-generator', icon: PhotoIcon },
     { name: '数据分析', href: '/data-analysis', icon: ChartBarIcon },
     { name: '学习资源', href: '/learning-resources', icon: BookOpenIcon },
     { name: '物料库', href: '/asset-library', icon: FolderIcon },
